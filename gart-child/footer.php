@@ -12,8 +12,6 @@
 
     $social_icons = get_field('social_icons', 'option');
 ?>    
-
-    <button class="register-link">Reegister</button>
     <footer id="site-footer" class="site-footer">
         <div class="container">
             <div class="footer_top">

@@ -118,7 +118,6 @@ function gart_inject_login_modal() {
     ?>
     <div id="login-register-modal">
         <div class="modal-content">
-            <span class="close-modal">×</span>
             <div id="modal-forms"></div>
         </div>
     </div>
@@ -127,31 +126,64 @@ function gart_inject_login_modal() {
 
 // ────── Secure AJAX Login ──────
 add_action( 'wp_ajax_nopriv_gart_login', 'gart_ajax_login' );
+add_action( 'wp_ajax_gart_login', 'gart_ajax_login' );
 function gart_ajax_login() {
     check_ajax_referer( 'gart_nonce', 'security' );
 
     $username = isset($_POST['username']) ? sanitize_user($_POST['username'], true) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $remember = isset($_POST['remember']) ? true : false;
 
     if ( empty($username) || empty($password) ) {
-        wp_send_json_error( array('message' => 'All fields are required.') );
+        wp_send_json_error( array('message' => 'Toate câmpurile sunt obligatorii.') );
     }
 
     $user = wp_signon( array(
         'user_login'    => $username,
         'user_password' => $password,
-        'remember'      => true
+        'remember'      => $remember
     ), is_ssl() );
 
     if ( is_wp_error($user) ) {
-        wp_send_json_error( array('message' => $user->get_error_message()) );
+        wp_send_json_error( array('message' => 'Autentificare eșuată. Verificați datele și încercați din nou.') );
     }
 
-    wp_send_json_success( array('message' => 'Login successful!') );
+    wp_send_json_success( array('message' => 'Autentificare cu succes!') );
+}
+
+// ────── Secure AJAX Lost Password ──────
+add_action( 'wp_ajax_nopriv_gart_lost_password', 'gart_ajax_lost_password' );
+add_action( 'wp_ajax_gart_lost_password', 'gart_ajax_lost_password' );
+function gart_ajax_lost_password() {
+    check_ajax_referer( 'gart_nonce', 'security' );
+
+    $user_login = isset($_POST['user_login']) ? sanitize_user($_POST['user_login']) : '';
+
+    if ( empty($user_login) ) {
+        wp_send_json_error( array('message' => 'Vă rugăm să introduceți un nume de utilizator sau o adresă de email.') );
+    }
+
+    $user_data = get_user_by( 'email', $user_login );
+    if ( ! $user_data ) {
+        $user_data = get_user_by( 'login', $user_login );
+    }
+
+    if ( ! $user_data ) {
+        wp_send_json_error( array('message' => 'Nu există niciun cont cu acest nume de utilizator sau adresă de email.') );
+    }
+
+    $result = retrieve_password( $user_login );
+
+    if ( is_wp_error( $result ) ) {
+        wp_send_json_error( array('message' => 'A apărut o eroare la trimiterea emailului de resetare.') );
+    }
+
+    wp_send_json_success( array('message' => 'Un email de resetare a parolei a fost trimis.') );
 }
 
 // ────── Secure AJAX Register ──────
 add_action( 'wp_ajax_nopriv_gart_register', 'gart_ajax_register' );
+add_action( 'wp_ajax_gart_register', 'gart_ajax_register' );
 function gart_ajax_register() {
     check_ajax_referer( 'gart_nonce', 'security' );
 
@@ -160,15 +192,15 @@ function gart_ajax_register() {
     $password = isset($_POST['password']) ? $_POST['password'] : '';
 
     if ( empty($username) || empty($email) || empty($password) ) {
-        wp_send_json_error( array('message' => 'All fields are required.') );
+        wp_send_json_error( array('message' => 'Toate câmpurile sunt obligatorii.') );
     }
 
     if ( !is_email($email) ) {
-        wp_send_json_error( array('message' => 'Invalid email address.') );
+        wp_send_json_error( array('message' => 'Adresă de email invalidă.') );
     }
 
     if ( username_exists($username) || email_exists($email) ) {
-        wp_send_json_error( array('message' => 'Username or email already taken.') );
+        wp_send_json_error( array('message' => 'Numele de utilizator sau emailul este deja folosit.') );
     }
 
     $user_id = wc_create_new_customer( $email, $username, $password );
@@ -183,7 +215,7 @@ function gart_ajax_register() {
         'remember'      => true
     ), is_ssl() );
 
-    wp_send_json_success( array('message' => 'Registration successful!') );
+    wp_send_json_success( array('message' => 'Înregistrare cu succes!') );
 }
 
 add_action('acf/init', function() {
