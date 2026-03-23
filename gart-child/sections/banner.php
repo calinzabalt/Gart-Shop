@@ -2,8 +2,8 @@
     $title = get_sub_field('title');
     $description = get_sub_field('description');
     $button = get_sub_field('button');
-    $button_title = $button['title'];
-    $button_link = $button['url'];
+    $button_title = is_array($button) && isset($button['title']) ? $button['title'] : '';
+    $button_link = is_array($button) && isset($button['url']) ? $button['url'] : '';
     $overlay = get_sub_field('overlay');
 ?>
 
@@ -11,6 +11,11 @@
     <?php echo wp_get_attachment_image( get_sub_field('background_image'), 'full' ); ?>
     <div class="banner_content">
         <div class="container">
+            
+            <div class="breadcrumb">
+                <?php woocommerce_breadcrumb(); ?>
+            </div>
+
             <h1 class="banner_title"><?php echo $title;?></h1>
 
             <?php if(!empty($description)):?>
