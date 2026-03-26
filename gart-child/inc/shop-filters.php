@@ -71,7 +71,7 @@ if ( ! empty( $colors ) && ! is_wp_error( $colors ) ):
         <h4 class="filter-widget-title">CULOARE</h4>
         <div class="color-boxes flex">
             <?php foreach ( $colors as $term ): ?>
-                <label class="color-box">
+                <label class="color-box <?php echo esc_attr( $term->slug ); ?>">
                     <input type="checkbox" name="pa_culoare" value="<?php echo esc_attr( $term->slug ); ?>">
                 </label>
             <?php endforeach; ?>
