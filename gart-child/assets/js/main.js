@@ -196,4 +196,107 @@ jQuery(function ($) {
         }
     });
 
+    /* =========================================
+     * WOOCOMMERCE AJAX FILTERS & LOAD MORE
+     * ========================================= */
+
+    if ($('.shop-container').length) {
+        let $pag = $('.woocommerce-pagination');
+        if ($pag.length) {
+            let hasNext = $pag.find('a.next').length > 0;
+            $pag.hide();
+            if (hasNext) {
+                $pag.after('<div class="gart-load-more-container"><button class="btn gart-load-more" data-page="2">Încarcă mai multe <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button></div>');
+            }
+        }
+    }
+
+    function ajaxFilterProducts(page = 1, isLoadMore = false) {
+        let $rightProducts = $('.right_products');
+        let $loadMoreBtn = $('.gart-load-more');
+        
+        // Grab values directly
+        let checkedCats = $('.left_filters input[name="cat"]:checked').map(function() { return this.value; }).get().join(',');
+        let checkedSizes = $('.left_filters input[name="pa_marime"]:checked').map(function() { return this.value; }).get().join(',');
+        let checkedColors = $('.left_filters input[name="pa_culoare"]:checked').map(function() { return this.value; }).get().join(',');
+        let orderby = $('.woocommerce-ordering select').val() || '';
+
+        // UI Loading
+        if (!isLoadMore && $rightProducts.length) {
+            $rightProducts.css('position', 'relative').append('<div class="gart-ajax-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);z-index:999;"><div style="width:40px;height:40px;border:4px solid #eaeaea;border-top:4px solid #000;border-radius:50%;animation:gart-spin 1s linear infinite;margin:100px auto;"></div></div>');
+            if (!$('#gart-spin-css').length) $('head').append('<style id="gart-spin-css">@keyframes gart-spin{to{transform:rotate(360deg)}}</style>');
+        } else if (isLoadMore) {
+            $loadMoreBtn.text('Se încarcă...').prop('disabled', true);
+        }
+
+        $.ajax({
+            url: gart_ajax.url,
+            type: 'POST',
+            data: {
+                action: 'gart_filter_products',
+                security: gart_ajax.nonce,
+                product_cat: checkedCats,
+                pa_marime: checkedSizes,
+                pa_culoare: checkedColors,
+                orderby: orderby,
+                paged: page,
+                is_load_more: isLoadMore ? 'true' : 'false'
+            },
+            success: function(response) {
+                if (!response.success) return;
+                
+                let html = response.data.html;
+                let hasNext = response.data.has_next;
+
+                if (isLoadMore) {
+                    if (html.trim() !== '') {
+                        $('ul.products').length ? $('ul.products').append(html) : $('.products').append(html);
+                    }
+                    
+                    if (hasNext) {
+                        $loadMoreBtn.attr('data-page', page + 1).text('Încarcă mai multe').prop('disabled', false);
+                    } else {
+                        $('.gart-load-more-container').remove();
+                    }
+                } else {
+                    if (html.trim() !== '') {
+                        $('.right_products').html('<div class="site-main"><div class="woocommerce-content">' + html + '</div></div>');
+                    } else {
+                        $('.right_products').html('<div class="woocommerce-info">Niciun produs găsit.</div>');
+                    }
+                    
+                    $('.gart-load-more-container, .woocommerce-pagination').remove();
+                    if (hasNext) {
+                        $('.right_products .woocommerce-content').append('<div class="gart-load-more-container"><button class="btn gart-load-more" data-page="2">Încarcă mai multe <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button></div>');
+                    }
+                    
+                    let offset = $('.shop-container').offset();
+                    if (offset && $(window).scrollTop() > offset.top) {
+                        $('html, body').animate({ scrollTop: offset.top - 50 }, 400);
+                    }
+                }
+            }
+        });
+    }
+
+    $(document).on('change', '.left_filters input[type="checkbox"]', function() {
+        ajaxFilterProducts(1, false);
+    });
+
+    $(document).on('click', '.reset-filters', function(e) {
+        e.preventDefault();
+        $('.left_filters input[type="checkbox"]').prop('checked', false);
+        ajaxFilterProducts(1, false);
+    });
+
+    $(document).on('click', '.gart-load-more', function(e) {
+        e.preventDefault();
+        let page = parseInt($(this).attr('data-page'));
+        if (page) ajaxFilterProducts(page, true);
+    });
+
+    $(document).on('change', '.woocommerce-ordering select', function() {
+        ajaxFilterProducts(1, false);
+    });
+
 });

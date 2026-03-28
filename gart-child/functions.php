@@ -233,3 +233,181 @@ add_action('acf/init', function() {
         ]);
     }
 });
+
+// Translate specific WooCommerce strings
+add_filter('gettext', 'gart_translate_woocommerce_strings', 999, 3);
+function gart_translate_woocommerce_strings($translated_text, $text, $domain) {
+    if (is_admin() && !wp_doing_ajax()) {
+        return $translated_text;
+    }
+
+    switch ($text) {
+        case 'Default sorting':
+            return 'Sortare implicită';
+        case 'Sort by popularity':
+            return 'Sortare după popularitate';
+        case 'Sort by average rating':
+            return 'Sortare după evaluare medie';
+        case 'Sort by latest':
+            return 'Sortare după cele mai recente';
+        case 'Sort by price: low to high':
+            return 'Sortare după preț: crescător';
+        case 'Sort by price: high to low':
+            return 'Sortare după preț: descrescător';
+    }
+
+    return $translated_text;
+}
+
+add_filter( 'woocommerce_result_count', 'custom_result_count_text', 10, 2 );
+function custom_result_count_text( $html, $args ) {
+
+    if ( $args['total'] <= 1 ) {
+        return 'Afisare produsul';
+    }
+
+    if ( $args['total'] <= $args['per_page'] ) {
+        return sprintf( 'Afisare toate cele %d produse', $args['total'] );
+    }
+
+    return sprintf(
+        'Afisare %1$d–%2$d din %3$d produse',
+        $args['first'],
+        $args['last'],
+        $args['total']
+    );
+}
+
+// Display 16 products per page
+add_filter( 'loop_shop_per_page', 'gart_loop_shop_per_page', 20 );
+function gart_loop_shop_per_page( $cols ) {
+    return 16;
+}
+
+// Custom AJAX Handler for WooCommerce
+add_action('wp_ajax_gart_filter_products', 'gart_ajax_filter_products');
+add_action('wp_ajax_nopriv_gart_filter_products', 'gart_ajax_filter_products');
+
+function gart_ajax_filter_products() {
+    check_ajax_referer('gart_nonce', 'security');
+
+    $paged = isset($_POST['paged']) ? absint($_POST['paged']) : 1;
+    $is_load_more = isset($_POST['is_load_more']) && $_POST['is_load_more'] === 'true';
+
+    $args = array(
+        'post_type'      => 'product',
+        'post_status'    => 'publish',
+        'paged'          => $paged,
+        'posts_per_page' => 16,
+    );
+
+    $tax_query = array('relation' => 'AND');
+
+    if (!empty($_POST['product_cat'])) {
+        $tax_query[] = array(
+            'taxonomy' => 'product_cat',
+            'field'    => 'slug',
+            'terms'    => explode(',', sanitize_text_field($_POST['product_cat'])),
+        );
+    }
+    if (!empty($_POST['pa_marime'])) {
+        $tax_query[] = array(
+            'taxonomy' => 'pa_marime',
+            'field'    => 'slug',
+            'terms'    => explode(',', sanitize_text_field($_POST['pa_marime'])),
+        );
+    }
+    if (!empty($_POST['pa_culoare'])) {
+        $tax_query[] = array(
+            'taxonomy' => 'pa_culoare',
+            'field'    => 'slug',
+            'terms'    => explode(',', sanitize_text_field($_POST['pa_culoare'])),
+        );
+    }
+    if (count($tax_query) > 1) {
+        $args['tax_query'] = $tax_query;
+    }
+
+    if (!empty($_POST['orderby'])) {
+        $orderby = sanitize_text_field($_POST['orderby']);
+        switch ($orderby) {
+            case 'price':
+                $args['meta_key'] = '_price';
+                $args['orderby']  = 'meta_value_num';
+                $args['order']    = 'ASC';
+                break;
+            case 'price-desc':
+                $args['meta_key'] = '_price';
+                $args['orderby']  = 'meta_value_num';
+                $args['order']    = 'DESC';
+                break;
+            case 'popularity':
+                $args['meta_key'] = 'total_sales';
+                $args['orderby']  = 'meta_value_num';
+                $args['order']    = 'DESC';
+                break;
+            case 'rating':
+                $args['meta_key'] = '_wc_average_rating';
+                $args['orderby']  = 'meta_value_num';
+                $args['order']    = 'DESC';
+                break;
+            case 'date':
+                $args['orderby']  = 'date';
+                $args['order']    = 'DESC';
+                break;
+            default:
+                $args['orderby']  = 'menu_order title';
+                $args['order']    = 'ASC';
+                break;
+        }
+    }
+
+    global $wp_query;
+    $wp_query = new WP_Query($args);
+
+    if ( function_exists('wc_set_loop_prop') ) {
+        wc_set_loop_prop( 'total', $wp_query->found_posts );
+        wc_set_loop_prop( 'total_pages', $wp_query->max_num_pages );
+        wc_set_loop_prop( 'current_page', $paged );
+        wc_set_loop_prop( 'per_page', 16 );
+    }
+
+    ob_start();
+    
+    if ( $is_load_more ) {
+        if ( $wp_query->have_posts() ) {
+            while ( $wp_query->have_posts() ) {
+                $wp_query->the_post();
+                wc_get_template_part( 'content', 'product' );
+            }
+        }
+    } else {
+        if ( $wp_query->found_posts > 0 ) {
+            do_action( 'woocommerce_before_shop_loop' );
+            woocommerce_product_loop_start();
+            
+            while ( $wp_query->have_posts() ) {
+                $wp_query->the_post();
+                do_action( 'woocommerce_shop_loop' );
+                wc_get_template_part( 'content', 'product' );
+            }
+            
+            woocommerce_product_loop_end();
+            do_action( 'woocommerce_after_shop_loop' );
+        } else {
+            do_action( 'woocommerce_no_products_found' );
+        }
+    }
+
+    $html = ob_get_clean();
+    $has_next = $paged < $wp_query->max_num_pages;
+
+    wp_reset_query();
+    wp_reset_postdata();
+
+    wp_send_json_success(array(
+        'html'     => $html,
+        'has_next' => $has_next,
+        'current'  => $paged
+    ));
+}
