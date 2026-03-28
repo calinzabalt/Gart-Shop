@@ -884,6 +884,99 @@ body.drawer-open {
     border: 1px solid var(--color-gray-300);
 }
 
+.woocommerce .products ul, .woocommerce ul.products{
+    margin: 0 -15px;
+    display: flex;
+    flex-flow: row wrap;
+    padding: 0;
+}
+
+.woocommerce ul.products li.product, 
+.woocommerce-page ul.products li.product{
+    float: none;
+    margin: 0;
+    padding: 15px;
+    width: 25%; 
+}
+
+.woocommerce ul.products li.product .button{
+    display: none;
+}
+
+.woocommerce ul.products li.product a img{
+    height: 500px;
+    margin: 0;
+    object-fit: cover;
+    transition: transform 0.5s ease, filter 0.3s ease;
+}
+
+.woocommerce-loop-product__title{
+    font-size: 20px !important;
+}
+
+.woocommerce ul.products li.product .price{
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.woocommerce ul.products li.product a:hover .price{
+    opacity: 1;
+    visibility: visible;
+}
+
+.product .product_bottom{
+    position: absolute;
+    color: #ffffff;
+    bottom: 20px;
+    padding: 0 20px !important; 
+    left: 0;
+    z-index: 3;
+}
+
+.product .product-category-name{
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.woocommerce ul.products li.product a:hover .product-category-name{
+    opacity: 1;
+    visibility: visible;
+}
+
+.woocommerce ul.products li.product a{
+    position: relative;
+}
+
+.woocommerce ul.products li.product a .product-inner{
+    overflow: hidden;
+}
+
+.product .overlay{
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.0);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.woocommerce ul.products li.product a:hover img{
+    transform: scale(1.08);
+}
+
+.woocommerce ul.products li.product a:hover .overlay{
+    background: rgba(0, 0, 0, 0.3);
+}
+
 /* footer */
 footer {
     background-color: var(--color-neutral-900);

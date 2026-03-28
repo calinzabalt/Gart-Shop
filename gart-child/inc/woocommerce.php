@@ -31,3 +31,15 @@ function gart_child_woo_page_builder() {
         }
     }
 }
+
+add_filter( 'woocommerce_get_image_size_thumbnail', 'gart_child_custom_woo_thumbnail_size' );
+function gart_child_custom_woo_thumbnail_size( $size ) {
+    return array(
+        'width'  => 552,
+        'height' => 1000,
+        'crop'   => 1,
+    );
+}
+
+remove_action( 'woocommerce_before_shop_loop_item', 'woocommerce_template_loop_product_link_open', 10 );
+remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_product_link_close', 5 );
