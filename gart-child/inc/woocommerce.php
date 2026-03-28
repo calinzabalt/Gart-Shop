@@ -15,8 +15,8 @@ remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wra
 // Remove default WooCommerce breadcrumb (since it is rendered in the banner manually)
 remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
 
-// Render ACF Page Builder sections on the Shop Page
-add_action( 'woocommerce_before_main_content', 'gart_child_woo_page_builder', 5 );
+// Render ACF Page Builder sections on the Shop Page AFTER the loop
+add_action( 'woocommerce_after_main_content', 'gart_child_woo_page_builder', 5 );
 function gart_child_woo_page_builder() {
     if ( is_shop() ) {
         $shop_page_id = wc_get_page_id( 'shop' );

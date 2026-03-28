@@ -105,6 +105,10 @@ section {
     margin-bottom: 200px;
 }
 
+.archive .banner {
+    margin-bottom: 100px;
+}
+
 section:last-of-type {
     margin-bottom: 0;
 }
@@ -188,18 +192,24 @@ header .container {
     display: flex;
 }
 
-.nav-logo a img {
-    width: 100%;
-    height: 100%;
+.nav-logo a svg {
     width: 80px;
     height: 80px;
     object-fit: contain;
     transition: all 0.3s ease;
 }
 
-header.sticky .nav-logo a img {
+header.sticky .nav-logo a svg {
     width: 55px;
     height: 55px;
+}
+
+.nav-logo a svg path {
+    fill: #ffffff;
+}
+
+.home .nav-logo a svg path {
+    fill: #000000;
 }
 
 .main-nav {
@@ -222,10 +232,22 @@ header.sticky .main-nav {
 .main-nav ul li a {
     font-size: 16px;
     text-decoration: none;
-    color: var(--text-primary);
+    color: var(--color-white);
 
     position: relative;
     display: inline-block;
+}
+
+.home .main-nav ul li a {
+    color: var(--text-primary);
+}
+
+header.sticky .main-nav ul li a {
+    color: var(--text-primary) !important;
+}
+
+header.sticky .nav-logo a svg path {
+    fill: #000000;
 }
 
 .main-nav ul li a::after {
@@ -235,8 +257,16 @@ header.sticky .main-nav {
     left: 0;
     width: 0;
     height: 2px;
-    background-color: var(--text-primary);
+    background-color: var(--color-white);
     transition: width 0.35s ease-out;
+}
+
+.home .main-nav ul li a::after {
+    background-color: var(--text-primary);
+}
+
+header.sticky .main-nav ul li a::after {
+    background-color: var(--text-primary);
 }
 
 .main-nav ul li a:hover::after {
@@ -272,6 +302,18 @@ header.sticky .main-nav {
     width: 15px;
     height: 15px;
     cursor: pointer;
+}
+
+.drawer-toggle svg path {
+    fill: #ffffff;
+}
+
+.home .drawer-toggle svg path {
+    fill: #000000;
+}
+
+header.sticky .drawer-toggle svg path {
+    fill: #000000;
 }
 
 .drawer-backdrop {
@@ -415,6 +457,10 @@ body.drawer-open {
     position: relative;
 }
 
+.banner.simple-banner {
+    background-color: var(--color-neutral-900);
+}
+
 .banner img {
     width: 100%;
     height: 100%;
@@ -432,6 +478,10 @@ body.drawer-open {
     min-height: 70vh;
     display: flex;
     align-items: center;
+}
+
+.banner.simple-banner .banner_content {
+    min-height: 30vh;
 }
 
 .home .banner .banner_content {
@@ -695,6 +745,10 @@ body.drawer-open {
 }
 
 /* Shop */
+section.shop-container {
+    margin-bottom: 100px;
+}
+
 .shop-container .flex {
     flex-flow: row;
     align-items: flex-start;

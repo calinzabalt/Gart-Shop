@@ -3,6 +3,20 @@ defined( 'ABSPATH' ) || exit;
 
 get_header( 'shop' );
 
+if ( is_shop() ) {
+    $context = wc_get_page_id('shop');
+} elseif ( is_tax() || is_category() || is_tag() ) {
+    $context = get_queried_object();
+} else {
+    $context = get_the_ID();
+}
+
+if ( get_field('title', $context) ) {
+    get_template_part('components/page-banner');
+} else {
+    get_template_part('components/simple-banner');
+}
+
 do_action( 'woocommerce_before_main_content' );
 ?>
 
@@ -45,5 +59,7 @@ do_action( 'woocommerce_before_main_content' );
         </div>
     </div>
 </section>
+
+<?php do_action( 'woocommerce_after_main_content' ); ?>
 
 <?php get_footer(); ?>
