@@ -26,6 +26,7 @@
     --color-white: #ffffff;
     --color-light: oklch(87.2% 0.01 258.338);
 
+    --color-gray-50: oklch(98.5% .002 247.839);
     --color-gray-300: oklch(87.2% .01 258.338);
     --color-gray-400: oklch(70.7% .022 261.325);
     --color-gray-600: oklch(44.6% .03 256.802);
@@ -119,6 +120,10 @@ section:last-of-type {
 
 .col-50 {
     width: 50%;
+}
+
+.col-33{
+    width: 33.33%;
 }
 
 section .label {
@@ -1089,6 +1094,48 @@ section.shop-container {
 .simple_label{
     font-size: 12px;
     margin-bottom: 20px;
+}
+
+/* Boxes */
+.boxes{
+    background-color: var(--color-gray-50);
+    padding: 100px 0px;
+}
+
+.boxes .flex{
+    flex-flow: row;
+    gap: 40px;
+    text-align: center;
+    padding-top: 30px;
+}
+
+.boxes .box .icon img{
+    width: 80px;
+    height: 80px;
+}
+
+.boxes .box .box_title{
+    font-size: 24px;
+    font-family: var(--font-secondary);
+    margin-top: 20px;
+}
+
+/* Stats */
+.stats .flex{
+    flex-flow: row;
+    text-align: center;
+}
+
+.stats .text{
+    font-family: var(--font-secondary);
+    color: rgb(230, 221, 206);
+    font-size: 48px;
+    margin-bottom: 5px;
+}
+
+.stats .info{
+    font-size: 16px;
+    color: var(--color-gray-600);
 }
 
 /* footer */
