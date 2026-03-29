@@ -102,6 +102,23 @@ a {
     margin-left: 18px;
 }
 
+.full_button{
+    background-color: rgb(230, 221, 206);
+    font-size: 14px;
+    border: 1px solid rgb(230, 221, 206);
+    color: var(--color-black);
+    text-decoration: none;
+    padding: 20px 48px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.full_button:hover{
+    color: var(--color-white);
+    background: transparent;
+}
+
 section {
     margin-bottom: 200px;
 }
@@ -1136,6 +1153,13 @@ section.shop-container {
 .stats .info{
     font-size: 16px;
     color: var(--color-gray-600);
+}
+
+/* dark_section */
+.dark_section .cta{
+    margin-top: 40px;
+    text-align: center;
+    display: block;
 }
 
 /* footer */
