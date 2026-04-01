@@ -291,8 +291,42 @@ jQuery(function ($) {
 
     $(document).on('click', '.gart-load-more', function(e) {
         e.preventDefault();
-        let page = parseInt($(this).attr('data-page'));
-        if (page) ajaxFilterProducts(page, true);
+        let $btn = $(this);
+        let page = parseInt($btn.attr('data-page'));
+        
+        if (!page) return;
+
+        if ($btn.closest('.blog_posts').length) {
+            $btn.text('Se încarcă...').prop('disabled', true);
+            $.ajax({
+                url: gart_ajax.url,
+                type: 'POST',
+                data: {
+                    action: 'gart_load_more_posts',
+                    paged: page,
+                    security: gart_ajax.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.data.html.trim() !== '') {
+                            $('.blog_posts .posts_grid').append(response.data.html);
+                        }
+                        if (response.data.has_next) {
+                            $btn.attr('data-page', page + 1).html('Încarcă mai multe <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg>').prop('disabled', false);
+                        } else {
+                            $btn.closest('.gart-load-more-container').remove();
+                        }
+                    } else {
+                        $btn.text('Eroare').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    $btn.text('Eroare la încărcare').prop('disabled', false);
+                }
+            });
+        } else {
+            ajaxFilterProducts(page, true);
+        }
     });
 
     $(document).on('change', '.woocommerce-ordering select', function() {

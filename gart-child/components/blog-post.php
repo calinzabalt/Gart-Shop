@@ -1,17 +1,40 @@
-<article>
-    <div class="thumbnail">
-
-    </div>
-    <div class="post_category">
-
-    </div>
-    <div class="post_title">
-        <h3></h3>
-    </div>
-    <div class="post_description">
-
-    </div>
-    <div class="post_date">
-        
-    </div>
+<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+    <a href="<?php the_permalink(); ?>" class="post_global_link">
+        <div class="thumbnail">
+            <?php if ( has_post_thumbnail() ) : ?>
+                <?php the_post_thumbnail( 'large' ); ?>
+            <?php endif; ?>
+        </div>
+        <div class="post_category">
+            <?php 
+                $categories = get_the_category();
+                if ( ! empty( $categories ) ) {
+                    $cat_names = wp_list_pluck( $categories, 'name' );
+                    echo esc_html( implode( ', ', $cat_names ) );
+                }
+            ?>
+        </div>
+        <div class="post_title">
+            <h3><?php the_title(); ?></h3>
+        </div>
+        <div class="post_description">
+            <?php 
+                $excerpt = wp_strip_all_tags( get_the_excerpt() );
+                echo wp_trim_words( $excerpt, 15, '...' );
+            ?>
+        </div>
+        <div class="post_date">
+            <?php 
+                $months = [
+                    'January' => 'Ianuarie', 'February' => 'Februarie', 'March' => 'Martie',
+                    'April' => 'Aprilie', 'May' => 'Mai', 'June' => 'Iunie',
+                    'July' => 'Iulie', 'August' => 'August', 'September' => 'Septembrie',
+                    'October' => 'Octombrie', 'November' => 'Noiembrie', 'December' => 'Decembrie'
+                ];
+                $month = get_the_date('F');
+                $ro_month = isset( $months[$month] ) ? $months[$month] : $month;
+                echo get_the_date('j') . ' ' . $ro_month . ' ' . get_the_date('Y');
+            ?>
+        </div>
+    </a>
 </article>

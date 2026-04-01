@@ -411,3 +411,42 @@ function gart_ajax_filter_products() {
         'current'  => $paged
     ));
 }
+
+// Custom AJAX Handler for Blog Posts Load More
+add_action('wp_ajax_gart_load_more_posts', 'gart_ajax_load_more_posts');
+add_action('wp_ajax_nopriv_gart_load_more_posts', 'gart_ajax_load_more_posts');
+
+function gart_ajax_load_more_posts() {
+    check_ajax_referer('gart_nonce', 'security');
+
+    $paged = isset($_POST['paged']) ? absint($_POST['paged']) : 1;
+
+    $args = array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'paged'          => $paged,
+        'posts_per_page' => 9,
+    );
+
+    $wp_query = new WP_Query($args);
+
+    ob_start();
+    
+    if ( $wp_query->have_posts() ) {
+        while ( $wp_query->have_posts() ) {
+            $wp_query->the_post();
+            get_template_part( 'components/blog-post' );
+        }
+    }
+
+    $html = ob_get_clean();
+    $has_next = $paged < $wp_query->max_num_pages;
+
+    wp_reset_query();
+    wp_reset_postdata();
+
+    wp_send_json_success(array(
+        'html'     => $html,
+        'has_next' => $has_next,
+    ));
+}
