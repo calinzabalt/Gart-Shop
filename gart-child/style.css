@@ -579,6 +579,7 @@ body.drawer-open {
     font-size: 14px !important;
     color: #ffffff !important;
     text-transform: uppercase;
+    margin-bottom: 10px !important;
 }
 
 .breadcrumb nav a {
@@ -1140,6 +1141,11 @@ section.shop-container {
 .boxes {
     background-color: var(--color-gray-50);
     padding: 100px 0px;
+}
+
+.boxes.white{
+    background-color: transparent;
+    padding: 0;
 }
 
 .boxes .flex {

@@ -1,11 +1,22 @@
 <?php
     $label = get_sub_field('label');
     $title = get_sub_field('title');
+    $description = get_sub_field('description');
     $items = get_sub_field('items');
+
+    $container_size = get_sub_field('container_size');
+    $background_color = get_sub_field('background_color');
+
+    $additional_class = '';
+
+    if($container_size == 'small'){
+        $additional_class = 'smaller';
+    }
+
 ?>
 
-<section class="boxes">
-    <div class="container">
+<section class="boxes <?php echo $background_color;?>">
+    <div class="container <?php echo $additional_class;?>">
 
         <?php if(!empty($label)):?>
             <div class="simple_label text-align-center">
@@ -14,6 +25,10 @@
         <?php endif;?>
 
         <h2 class="section_title text-align-center"><?php echo $title;?></h2>
+
+        <?php if(!empty($description)):?>
+            <p class="section_description text-align-center"><?php echo $description;?></p>
+        <?php endif;?>
           
         <?php if(!empty($items)):?>
             <div class="flex">
