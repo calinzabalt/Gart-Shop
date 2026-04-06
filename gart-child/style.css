@@ -124,15 +124,19 @@ a {
 }
 
 section {
-    margin-bottom: 200px;
+    margin-bottom: 100px;
 }
 
 .archive .banner {
     margin-bottom: 100px;
 }
 
-section:last-of-type {
+section.newsletter {
     margin-bottom: 0;
+}
+
+.home .explore_categories {
+    margin: 200px 0px;
 }
 
 .col-25 {
@@ -805,6 +809,9 @@ section.shop-container {
 
 .shop-container .flex .left_filters {
     width: 20%;
+    position: sticky;
+    top: 140px;
+    max-height: calc(100vh - 80px);
 }
 
 .shop-container .flex .right_products {
@@ -1143,7 +1150,7 @@ section.shop-container {
     padding: 100px 0px;
 }
 
-.boxes.white{
+.boxes.white {
     background-color: transparent;
     padding: 0;
 }
@@ -1251,7 +1258,7 @@ section.shop-container {
 }
 
 /* Contact b2b */
-.contact_form_wrapper{
+.contact_form_wrapper {
     max-width: 900px;
     width: 100%;
     margin: 0 auto;
@@ -1260,18 +1267,18 @@ section.shop-container {
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
-.contact_form_wrapper .flex{
+.contact_form_wrapper .flex {
     gap: 0;
     margin: 0 -15px;
 }
 
-.contact_form_wrapper .flex .col-50{
+.contact_form_wrapper .flex .col-50 {
     padding: 0 15px;
 }
 
 .contact_form_wrapper textarea,
 .contact_form_wrapper select,
-.contact_form_wrapper input{
+.contact_form_wrapper input {
     padding: 15px;
     border-radius: 0;
     width: 100%;
@@ -1281,12 +1288,12 @@ section.shop-container {
     border: 1px solid var(--color-gray-300);
 }
 
-.contact_form_wrapper label{
+.contact_form_wrapper label {
     font-size: 14px;
     font-weight: 600;
 }
 
-.contact_form_wrapper .wpcf7-submit{
+.contact_form_wrapper .wpcf7-submit {
     color: #fff;
     font-size: 12px;
     cursor: pointer;
@@ -1294,37 +1301,37 @@ section.shop-container {
     transition: all 0.5s ease;
 }
 
-.contact_form_wrapper .wpcf7-submit:hover{
+.contact_form_wrapper .wpcf7-submit:hover {
     background: #000;
 }
 
-.contact_form_wrapper p:last-child{
+.contact_form_wrapper p:last-child {
     margin-bottom: 0;
     position: relative;
 }
 
-.contact_form_wrapper .wpcf7-spinner{
+.contact_form_wrapper .wpcf7-spinner {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
 }
 
-.contact_b2b{
+.contact_b2b {
     background-color: var(--color-gray-50);
     padding: 100px 0px;
 }
 
-.additional_text{
+.additional_text {
     margin-bottom: 40px;
     display: block;
 }
 
-.additional_text p{
+.additional_text p {
     font-size: 14px;
 }
 
-.additional_text a{
+.additional_text a {
     font-weight: 600;
     font-size: 14px;
 }
@@ -1333,70 +1340,70 @@ section.shop-container {
     margin-bottom: 20px;
 }
 
-.contact_boxes .flex{
+.contact_boxes .flex {
     gap: 0;
     margin: 0 -20px;
     text-align: center;
 }
 
-.contact_boxes .flex .stat{
+.contact_boxes .flex .stat {
     padding: 0 20px;
 }
 
-.contact_boxes .flex .stat .text{
+.contact_boxes .flex .stat .text {
     font-family: var(--font-secondary);
     font-size: 20px;
     margin-bottom: 15px;
 }
 
-.contact_boxes .flex .stat .info{
+.contact_boxes .flex .stat .info {
     font-size: 16px;
     color: var(--color-gray-600);
     line-height: 26px;
 }
 
-.contact_us .flex{
+.contact_us .flex {
     flex-flow: row;
     gap: 80px;
 }
 
-.contact_us .items .item_title{
+.contact_us .items .item_title {
     font-size: 18px;
     font-weight: 500;
     margin-bottom: 15px;
 }
 
-.contact_us .items .item_info p{
+.contact_us .items .item_info p {
     color: var(--color-gray-600);
     margin-bottom: 40px;
     line-height: 24px;
     margin: 0;
 }
 
-.contact_us .items .item_info p a{
+.contact_us .items .item_info p a {
     text-decoration: none;
     color: var(--color-gray-600);
     margin-bottom: 40px;
     line-height: 24px;
 }
 
-.contact_us .items .item{
+.contact_us .items .item {
     margin-bottom: 30px;
 }
 
-.contact_us .social_title{
+.contact_us .social_title {
     font-size: 18px;
     font-weight: 500;
     margin-bottom: 15px;
 }
 
-.social_square_links{
+.social_square_links {
     display: flex;
     flex-flow: row;
     gap: 20px;
 }
 
-.social_square_links .social_link a{
+.social_square_links .social_link a {
     font-size: 16px;
     text-decoration: none;
 
@@ -1410,31 +1417,31 @@ section.shop-container {
     background-color: transparent;
 }
 
-.social_square_links .social_link a:hover{
+.social_square_links .social_link a:hover {
     background-color: #000;
     color: #ffffff;
 }
 
-.contact_us .contact_form_wrapper{
+.contact_us .contact_form_wrapper {
     background-color: var(--color-gray-50);
     box-shadow: none;
 }
 
-.contact_us .items{
+.contact_us .items {
     margin-bottom: 20px;
     border-bottom: 1px solid var(--color-gray-300);
 }
 
-.map{
-   background-color: var(--color-gray-50);
-   padding: 100px 0px;
+.map {
+    background-color: var(--color-gray-50);
+    padding: 100px 0px;
 }
 
-.map .map_wrapper{
+.map .map_wrapper {
     margin-top: 50px;
 }
 
-.map .map_wrapper iframe{
+.map .map_wrapper iframe {
     width: 100%;
     aspect-ratio: 16 / 9;
     border: 0;
@@ -1442,33 +1449,33 @@ section.shop-container {
     max-height: 600px;
 }
 
-.faq .faq_wrapper{
+.faq .faq_wrapper {
     display: flex;
     flex-flow: column;
 }
 
-.faq .faq_title{
+.faq .faq_title {
     font-size: 20px;
     font-weight: 500;
     margin-bottom: 15px;
 }
 
-.faq .faq_info{
+.faq .faq_info {
     color: var(--color-gray-600);
-    line-height: 24px; 
+    line-height: 24px;
 }
 
-.faq .faq_item{
+.faq .faq_item {
     padding-bottom: 30px;
     margin-bottom: 30px;
     border-bottom: 1px solid var(--color-gray-300);
 }
 
-.faq .faq_item:last-child{
+.faq .faq_item:last-child {
     border-bottom: 0;
 }
 
-.faq_wrapper{
+.faq_wrapper {
     margin-top: 50px;
     max-width: 900px;
     width: 100%;

@@ -450,3 +450,10 @@ function gart_ajax_load_more_posts() {
         'has_next' => $has_next,
     ));
 }
+
+// Translate WooCommerce breadcrumb "Home" to Romanian ("Acasă")
+add_filter( 'woocommerce_breadcrumb_defaults', 'gart_custom_breadcrumb_home' );
+function gart_custom_breadcrumb_home( $defaults ) {
+    $defaults['home'] = 'Acasă';
+    return $defaults;
+}
