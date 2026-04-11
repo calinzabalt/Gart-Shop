@@ -13,6 +13,12 @@
     }
 ?>
 
+<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
+    <div class="container">
+        <?php the_content(); ?>
+    </div>
+<?php endwhile; endif; ?>
+
 <?php if ( have_rows('page_builder') ): ?>
     <?php while ( have_rows('page_builder') ): the_row(); ?>
         <?php
