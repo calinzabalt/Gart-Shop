@@ -24,17 +24,7 @@
             ?>
         </div>
         <div class="post_date">
-            <?php 
-                $months = [
-                    'January' => 'Ianuarie', 'February' => 'Februarie', 'March' => 'Martie',
-                    'April' => 'Aprilie', 'May' => 'Mai', 'June' => 'Iunie',
-                    'July' => 'Iulie', 'August' => 'August', 'September' => 'Septembrie',
-                    'October' => 'Octombrie', 'November' => 'Noiembrie', 'December' => 'Decembrie'
-                ];
-                $month = get_the_date('F');
-                $ro_month = isset( $months[$month] ) ? $months[$month] : $month;
-                echo get_the_date('j') . ' ' . $ro_month . ' ' . get_the_date('Y');
-            ?>
+            <?php echo gart_get_romanian_date(); ?>
         </div>
     </a>
 </article>

@@ -457,3 +457,16 @@ function gart_custom_breadcrumb_home( $defaults ) {
     $defaults['home'] = 'Acasă';
     return $defaults;
 }
+
+// Global function to get formatted Romanian date
+function gart_get_romanian_date() {
+    $months = [
+        'January' => 'Ianuarie', 'February' => 'Februarie', 'March' => 'Martie',
+        'April' => 'Aprilie', 'May' => 'Mai', 'June' => 'Iunie',
+        'July' => 'Iulie', 'August' => 'August', 'September' => 'Septembrie',
+        'October' => 'Octombrie', 'November' => 'Noiembrie', 'December' => 'Decembrie'
+    ];
+    $month = get_the_date('F');
+    $ro_month = isset( $months[$month] ) ? $months[$month] : $month;
+    return get_the_date('j') . ' ' . $ro_month . ' ' . get_the_date('Y');
+}
