@@ -477,3 +477,73 @@ function gart_remove_my_account_downloads_tab( $items ) {
     unset( $items['downloads'] );
     return $items;
 }
+
+// ────── B2B User Price Reduction ──────
+
+// Add custom field to user edit screens
+add_action( 'show_user_profile', 'gart_add_b2b_user_field' );
+add_action( 'edit_user_profile', 'gart_add_b2b_user_field' );
+function gart_add_b2b_user_field( $user ) {
+    $reduction = get_the_author_meta( 'b2b_price_reduction', $user->ID );
+    ?>
+    <h3>B2B Settings</h3>
+    <table class="form-table">
+        <tr>
+            <th><label for="b2b_price_reduction">B2B Price Reduction (%)</label></th>
+            <td>
+                <input type="number" name="b2b_price_reduction" id="b2b_price_reduction" value="<?php echo esc_attr( $reduction ); ?>" class="regular-text" min="0" max="100" step="1" />
+                <br><span class="description">Enter the discount percentage for this user (e.g. 10 for 10% discount on all products).</span>
+            </td>
+        </tr>
+    </table>
+    <?php
+}
+
+// Save the custom field
+add_action( 'personal_options_update', 'gart_save_b2b_user_field' );
+add_action( 'edit_user_profile_update', 'gart_save_b2b_user_field' );
+function gart_save_b2b_user_field( $user_id ) {
+    if ( ! current_user_can( 'edit_user', $user_id ) ) {
+        return false;
+    }
+    if ( isset( $_POST['b2b_price_reduction'] ) ) {
+        update_user_meta( $user_id, 'b2b_price_reduction', intval( $_POST['b2b_price_reduction'] ) );
+    }
+}
+
+// Apply the discount to the product price globally
+function gart_apply_b2b_discount( $price, $product ) {
+    if ( is_admin() && ! wp_doing_ajax() ) {
+        return $price;
+    }
+
+    if ( ! is_user_logged_in() || empty( $price ) ) {
+        return $price;
+    }
+
+    $user_id = get_current_user_id();
+    $reduction = get_user_meta( $user_id, 'b2b_price_reduction', true );
+
+    if ( ! empty( $reduction ) && is_numeric( $reduction ) && $reduction > 0 ) {
+        // Calculate discounted price
+        $discount_multiplier = ( 100 - $reduction ) / 100;
+        $price = (float) $price * $discount_multiplier;
+    }
+
+    return $price;
+}
+add_filter( 'woocommerce_product_get_price', 'gart_apply_b2b_discount', 99, 2 );
+add_filter( 'woocommerce_product_variation_get_price', 'gart_apply_b2b_discount', 99, 2 );
+
+// Fix caching issue for variable products
+add_filter( 'woocommerce_get_variation_prices_hash', 'gart_b2b_variation_prices_hash', 10, 3 );
+function gart_b2b_variation_prices_hash( $price_hash, $product, $for_display ) {
+    if ( is_user_logged_in() ) {
+        $user_id = get_current_user_id();
+        $reduction = get_user_meta( $user_id, 'b2b_price_reduction', true );
+        if ( ! empty( $reduction ) && is_numeric( $reduction ) && $reduction > 0 ) {
+            $price_hash[] = 'b2b_' . $reduction;
+        }
+    }
+    return $price_hash;
+}
