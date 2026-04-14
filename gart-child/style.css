@@ -328,6 +328,47 @@ header.sticky .main-nav ul li a::after {
     width: 100%;
 }
 
+.shop-header-icons {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.shop-icon {
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    position: relative;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.shop-icon:hover {
+    opacity: 0.8;
+}
+
+header.sticky .shop-icon {
+    color: var(--text-primary) !important;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+header.sticky .cart-count {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+}
+
 .nav-logo {
     padding: 0 40px;
 }
@@ -1837,6 +1878,203 @@ section.shop-container {
 .wp-block-woocommerce-checkout,
 .wp-block-woocommerce-cart {
     margin-bottom: 100px;
+}
+
+/* My Account */
+.woocommerce-account .woocommerce,
+.wp-block-woocommerce-my-account {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-bottom: 120px;
+    align-items: flex-start;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation {
+    flex: 0 0 25%;
+    max-width: 300px;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation ul li {
+    border-bottom: 1px solid var(--color-gray-300);
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation ul li:last-child {
+    border-bottom: none;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation ul li a {
+    display: block;
+    padding: 16px 20px;
+    background-color: var(--color-white);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation ul li.is-active a,
+.woocommerce-account .woocommerce-MyAccount-navigation ul li a:hover {
+    background-color: var(--color-black);
+    color: var(--color-white);
+}
+
+.woocommerce-account .woocommerce-MyAccount-content {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 6px;
+    padding: 40px;
+}
+
+@media (max-width: 768px) {
+    .woocommerce-account .woocommerce-MyAccount-navigation,
+    .woocommerce-account .woocommerce-MyAccount-content {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* My Account Forms (Account Details & Addresses) */
+.woocommerce-MyAccount-content form {
+    margin-top: 10px;
+}
+
+.woocommerce-MyAccount-content .form-row {
+    margin-bottom: 20px;
+}
+
+.woocommerce-MyAccount-content .form-row label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.woocommerce-MyAccount-content .form-row input[type="text"],
+.woocommerce-MyAccount-content .form-row input[type="email"],
+.woocommerce-MyAccount-content .form-row input[type="password"],
+.woocommerce-MyAccount-content .form-row input[type="tel"],
+.woocommerce-MyAccount-content .form-row select,
+.woocommerce-MyAccount-content .form-row textarea {
+    width: 100%;
+    padding: 12px 15px;
+    font-family: var(--font-primary);
+    font-size: 16px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 6px;
+    background-color: var(--color-white);
+    color: var(--text-primary);
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.woocommerce-MyAccount-content .form-row input:focus,
+.woocommerce-MyAccount-content .form-row select:focus,
+.woocommerce-MyAccount-content .form-row textarea:focus {
+    outline: none;
+    border-color: var(--text-primary);
+}
+
+.woocommerce-MyAccount-content .form-row-first {
+    width: 48%;
+    float: left;
+}
+
+.woocommerce-MyAccount-content .form-row-last {
+    width: 48%;
+    float: right;
+}
+
+.woocommerce-MyAccount-content .clear {
+    clear: both;
+}
+
+/* Fieldset (Password Change) */
+.woocommerce-MyAccount-content fieldset {
+    border: 1px solid var(--color-gray-300);
+    border-radius: 6px;
+    padding: 30px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.woocommerce-MyAccount-content fieldset legend {
+    font-size: 18px;
+    font-family: var(--font-secondary);
+    font-weight: 500;
+    padding: 0 10px;
+}
+
+/* My Account Buttons */
+.woocommerce-MyAccount-content button[type="submit"],
+.woocommerce-MyAccount-content .woocommerce-Button {
+    padding: 15px 30px;
+    border: 1px solid #000000;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    background-color: #000000;
+    font-family: var(--font-primary);
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 15px;
+    display: inline-block;
+}
+
+.woocommerce-MyAccount-content button[type="submit"]:hover,
+.woocommerce-MyAccount-content .woocommerce-Button:hover {
+    background-color: transparent;
+    color: #000000;
+}
+
+/* Addresses display */
+.woocommerce-MyAccount-content .woocommerce-Address {
+    margin-bottom: 30px;
+}
+
+.woocommerce-MyAccount-content .woocommerce-Address-title {
+    border-bottom: 1px solid var(--color-gray-300);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.woocommerce-MyAccount-content .woocommerce-Address-title h3 {
+    font-size: 24px;
+    font-family: var(--font-secondary);
+    margin: 0 0 10px 0;
+}
+
+.woocommerce-MyAccount-content .woocommerce-Address-title .edit {
+    font-size: 14px;
+    color: oklch(54.6% .245 262.881);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    display: inline-block;
+}
+
+.woocommerce-MyAccount-content .woocommerce-Address-title .edit:hover {
+    color: var(--text-primary);
+}
+
+.woocommerce-MyAccount-content address {
+    font-style: normal;
+    line-height: 28px;
+    color: var(--color-gray-600);
 }
 
 /* footer */

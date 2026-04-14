@@ -470,3 +470,10 @@ function gart_get_romanian_date() {
     $ro_month = isset( $months[$month] ) ? $months[$month] : $month;
     return get_the_date('j') . ' ' . $ro_month . ' ' . get_the_date('Y');
 }
+
+// Remove Downloads tab from WooCommerce My Account
+add_filter( 'woocommerce_account_menu_items', 'gart_remove_my_account_downloads_tab', 999 );
+function gart_remove_my_account_downloads_tab( $items ) {
+    unset( $items['downloads'] );
+    return $items;
+}
