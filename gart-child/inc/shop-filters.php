@@ -7,7 +7,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <div class="shop-filter-header flex">
-    <h3 class="filter-title">Filtre</h3>
+    <h3 class="filter-title">
+        Filtre
+        <svg class="filter-dropdown-icon" width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L7 7L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </h3>
     <a href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>" class="reset-filters">Resetează</a>
 </div>
 
@@ -78,3 +83,19 @@ if ( ! empty( $colors ) && ! is_wp_error( $colors ) ):
         </div>
     </div>
 <?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterHeader = document.querySelector('.shop-filter-header .filter-title');
+    if (filterHeader) {
+        filterHeader.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                const filterContainer = document.querySelector('.left_filters');
+                if(filterContainer) {
+                    filterContainer.classList.toggle('active');
+                }
+            }
+        });
+    }
+});
+</script>
