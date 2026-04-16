@@ -29,7 +29,9 @@ if ( ! empty( $categories ) && ! is_wp_error( $categories ) ):
     <div class="filter-widget filter-categories">
         <h4 class="filter-widget-title">CATEGORIE</h4>
         <ul class="filter-list">
-            <?php foreach ( $categories as $category ): ?>
+            <?php foreach ( $categories as $category ): 
+                if ( $category->slug === 'licitatii' ) continue;
+            ?>
                 <li>
                     <label>
                         <input type="checkbox" name="cat" value="<?php echo esc_attr( $category->slug ); ?>">

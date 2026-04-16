@@ -8,6 +8,28 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Exclude auctions from main shop loop
+add_action( 'woocommerce_product_query', 'gart_exclude_auctions_from_shop' );
+function gart_exclude_auctions_from_shop( $q ) {
+    $tax_query = (array) $q->get( 'tax_query' );
+
+    $tax_query[] = array(
+        'taxonomy' => 'product_type',
+        'field'    => 'slug',
+        'terms'    => array( 'auction' ),
+        'operator' => 'NOT IN',
+    );
+    
+    $tax_query[] = array(
+        'taxonomy' => 'product_cat',
+        'field'    => 'slug',
+        'terms'    => array( 'licitatii' ),
+        'operator' => 'NOT IN',
+    );
+
+    $q->set( 'tax_query', $tax_query );
+}
+
 remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
 remove_action( 'wp_print_styles', 'print_emoji_styles' );
@@ -74,6 +96,15 @@ function gart_child_enqueue_scripts() {
         'url'   => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('gart_nonce')
     ) );
+
+    // WooCommerce Blocks – Romanian JS translations (must load before Blocks render)
+    wp_enqueue_script(
+        'gart-wc-blocks-ro',
+        get_stylesheet_directory_uri() . '/assets/js/wc-blocks-ro.js',
+        array( 'wp-hooks', 'wp-i18n' ),
+        '1.1.1',
+        false  // load in <head> so it runs before React/Blocks hydration
+    );
 }
 
 function gart_enqueue_google_fonts() {
@@ -234,26 +265,210 @@ add_action('acf/init', function() {
     }
 });
 
-// Translate specific WooCommerce strings
 add_filter('gettext', 'gart_translate_woocommerce_strings', 999, 3);
+add_filter( 'wc_add_to_cart_message_html', 'gart_ro_add_to_cart_message', 10, 3 );
+function gart_ro_add_to_cart_message( $message, $products, $show_qty ) {
+    $titles = array();
+    foreach ( $products as $product_id => $qty ) {
+        $title = get_the_title( $product_id );
+        $titles[] = ( $show_qty && $qty > 1 )
+            ? sprintf( '&ldquo;%s&rdquo; &times; %d', $title, $qty )
+            : sprintf( '&ldquo;%s&rdquo;', $title );
+    }
+    $products_list = implode( ', ', $titles );
+    $cart_url      = wc_get_cart_url();
+
+    return sprintf(
+        '%s a fost adăugat în coșul tău. <a href="%s" class="button wc-forward">%s</a>',
+        $products_list,
+        esc_url( $cart_url ),
+        'Vezi coșul'
+    );
+}
+
+add_filter( 'ngettext', 'gart_ro_ngettext_cart', 10, 5 );
+function gart_ro_ngettext_cart( $translation, $single, $plural, $number, $domain ) {
+    if ( 'woocommerce' !== $domain ) {
+        return $translation;
+    }
+
+    $ngettext_map = [
+        '%s has been added to your cart.'  => [ 1 => '%s a fost adăugat în coșul tău.',  'n' => '%s au fost adăugate în coșul tău.' ],
+        '%s item'                          => [ 1 => '%s produs',                          'n' => '%s produse' ],
+        '%s product'                       => [ 1 => '%s produs',                          'n' => '%s produse' ],
+        '%s review'                        => [ 1 => '%s recenzie',                        'n' => '%s recenzii' ],
+        '%s order'                         => [ 1 => '%s comandă',                         'n' => '%s comenzi' ],
+    ];
+
+    if ( isset( $ngettext_map[ $single ] ) ) {
+        return $number > 1 ? $ngettext_map[ $single ]['n'] : $ngettext_map[ $single ][1];
+    }
+
+    return $translation;
+}
+
 function gart_translate_woocommerce_strings($translated_text, $text, $domain) {
     if (is_admin() && !wp_doing_ajax()) {
         return $translated_text;
     }
 
-    switch ($text) {
-        case 'Default sorting':
-            return 'Sortare implicită';
-        case 'Sort by popularity':
-            return 'Sortare după popularitate';
-        case 'Sort by average rating':
-            return 'Sortare după evaluare medie';
-        case 'Sort by latest':
-            return 'Sortare după cele mai recente';
-        case 'Sort by price: low to high':
-            return 'Sortare după preț: crescător';
-        case 'Sort by price: high to low':
-            return 'Sortare după preț: descrescător';
+    $map = [
+        // ── Shop sorting ──────────────────────────────────────
+        'Default sorting'                        => 'Sortare implicită',
+        'Sort by popularity'                     => 'Sortare după popularitate',
+        'Sort by average rating'                 => 'Sortare după evaluare medie',
+        'Sort by latest'                         => 'Sortare după cele mai recente',
+        'Sort by price: low to high'             => 'Sortare după preț: crescător',
+        'Sort by price: high to low'             => 'Sortare după preț: descrescător',
+
+        // ── Cart notices ──────────────────────────────────────
+        'View cart'                              => 'Vezi coșul',
+        'Cart updated.'                          => 'Coșul a fost actualizat.',
+        'Your cart is currently empty.'          => 'Coșul tău este gol.',
+        'Return to shop'                         => 'Înapoi la magazin',
+        'Continue shopping'                      => 'Continuă cumpărăturile',
+
+        // ── Cart table headers ────────────────────────────────
+        'Product'                                => 'Produs',
+        'Price'                                  => 'Preț',
+        'Quantity'                               => 'Cantitate',
+        'Subtotal'                               => 'Subtotal',
+        'Remove this item'                       => 'Șterge',
+
+        // ── Cart totals block ─────────────────────────────────
+        'Cart totals'                            => 'Total coș',
+        'Shipping'                               => 'Livrare',
+        'Total'                                  => 'Total',
+        'Apply coupon'                           => 'Aplică cuponul',
+        'Update cart'                            => 'Actualizează coșul',
+        'Proceed to checkout'                    => 'Finalizează comanda',
+        'Coupon:'                                => 'Cupon:',
+        'Coupon code'                            => 'Cod cupon',
+        'Enter code'                             => 'Introdu codul',
+        'Calculate shipping'                     => 'Calculează livrarea',
+        'Flat rate'                              => 'Tarif fix',
+        'Free shipping'                          => 'Livrare gratuită',
+        'No shipping options were found.'        => 'Nu există opțiuni de livrare disponibile.',
+        'Shipping to %s.'                        => 'Livrare către %s.',
+
+        // ── Checkout fields ───────────────────────────────────
+        'Billing details'                        => 'Date de facturare',
+        'Billing address'                        => 'Adresă de facturare',
+        'Shipping address'                       => 'Adresă de livrare',
+        'Ship to a different address?'           => 'Livrare la o altă adresă?',
+        'Order notes'                            => 'Note comandă',
+        'Notes about your order, e.g. special notes for delivery.' => 'Note despre comandă, ex. instrucțiuni speciale pentru livrare.',
+        'Your order'                             => 'Comanda ta',
+        'Place order'                            => 'Plasează comanda',
+        'Have a coupon?'                         => 'Ai un cod de cupon?',
+        'Click here to enter your code'         => 'Click aici pentru a introduce codul',
+        'I have read and agree to the website %s' => 'Am citit și sunt de acord cu %s ale site-ului',
+        'terms and conditions'                   => 'termenii și condițiile',
+        'Privacy policy'                         => 'Politică de confidențialitate',
+
+        // ── Checkout: personal fields ─────────────────────────
+        'First name'                             => 'Prenume',
+        'Last name'                              => 'Nume',
+        'Company name (optional)'                => 'Companie (opțional)',
+        'Country / Region'                       => 'Țară / Regiune',
+        'Street address'                         => 'Adresă',
+        'Apartment, suite, unit, etc. (optional)' => 'Bloc, scară, apartament (opțional)',
+        'Town / City'                            => 'Oraș',
+        'State / County'                         => 'Județ',
+        'Postcode / ZIP'                         => 'Cod poștal',
+        'Phone'                                  => 'Telefon',
+        'Email address'                          => 'Adresă de email',
+        'Email'                                  => 'Email',
+        'Order notes (optional)'                 => 'Note pentru comandă (opțional)',
+
+        // ── Checkout: order summary ───────────────────────────
+        'Order summary'                          => 'Rezumat comandă',
+        'Product'                                => 'Produs',
+        'Subtotal'                               => 'Subtotal',
+        'Total'                                  => 'Total',
+        'Shipping'                               => 'Livrare',
+        'Payment'                                => 'Plată',
+        'Payment method'                         => 'Metodă de plată',
+        'Direct bank transfer'                   => 'Transfer bancar',
+        'Cash on delivery'                       => 'Ramburs la livrare',
+        'Your order'                             => 'Comanda ta',
+
+        // ── My Account navigation ─────────────────────────────
+        'My account'                             => 'Contul meu',
+        'Dashboard'                              => 'Panou de control',
+        'Orders'                                 => 'Comenzi',
+        'Downloads'                              => 'Descărcări',
+        'Addresses'                              => 'Adrese',
+        'Account details'                        => 'Detalii cont',
+        'Log out'                                => 'Deconectare',
+        'Logout'                                 => 'Deconectare',
+
+        // ── My Account: dashboard ─────────────────────────────
+        'Hello %s'                               => 'Bună, %s',
+        'From your account dashboard you can view your %1$s, manage your %2$s and %3$s.' => 'Din panoul de cont poți vizualiza %1$s, gestiona %2$s și %3$s.',
+        'recent orders'                          => 'comenzile recente',
+        'shipping and billing addresses'         => 'adresele de livrare și facturare',
+        'edit your password and account details' => 'schimba parola și detaliile contului',
+
+        // ── My Account: orders table ──────────────────────────
+        'Order'                                  => 'Comandă',
+        'Date'                                   => 'Dată',
+        'Status'                                 => 'Status',
+        'Actions'                                => 'Acțiuni',
+        'No order has been made yet.'            => 'Nu ai plasat nicio comandă încă.',
+        'Browse products'                        => 'Explorează produsele',
+        'View'                                   => 'Vizualizare',
+        'View order'                             => 'Vezi comanda',
+        'Pay'                                    => 'Plătește',
+        'Cancel'                                 => 'Anulează',
+        'Order #%s'                              => 'Comanda #%s',
+        'pending payment'                        => 'în așteptarea plății',
+        'processing'                             => 'în procesare',
+        'on-hold'                                => 'în așteptare',
+        'completed'                              => 'finalizată',
+        'cancelled'                              => 'anulată',
+        'refunded'                               => 'rambursată',
+        'failed'                                 => 'eșuată',
+
+        // ── My Account: addresses ─────────────────────────────
+        'Billing address'                        => 'Adresă de facturare',
+        'Shipping address'                       => 'Adresă de livrare',
+        'Add'                                    => 'Adaugă',
+        'Edit'                                   => 'Editează',
+        'You have not set up this type of address yet.' => 'Nu ai adăugat încă această adresă.',
+
+        // ── My Account: account details ───────────────────────
+        'First name'                             => 'Prenume',
+        'Last name'                              => 'Nume',
+        'Display name'                           => 'Nume afișat',
+        'This will be how your name will be displayed in the account section and in reviews' => 'Acesta va fi numele afișat în contul tău și în recenzii',
+        'Password change'                        => 'Schimbare parolă',
+        'Current password (leave blank to leave unchanged)' => 'Parola curentă (lasă gol pentru a nu schimba)',
+        'New password (leave blank to leave unchanged)' => 'Parolă nouă (lasă gol pentru a nu schimba)',
+        'Confirm new password'                   => 'Confirmă parola nouă',
+        'Save changes'                           => 'Salvează modificările',
+
+        // ── Login / Register ──────────────────────────────────
+        'Username or email address'              => 'Utilizator sau adresă de email',
+        'Password'                               => 'Parolă',
+        'Remember me'                            => 'Ține-mă minte',
+        'Log in'                                 => 'Conectare',
+        'Lost your password?'                    => 'Ai uitat parola?',
+        'Register'                               => 'Înregistrare',
+        'Username'                               => 'Utilizator',
+        'Anti-spam'                              => 'Anti-spam',
+        'Already have an account? %s'            => 'Ai deja un cont? %s',
+
+        // ── Required field notices ────────────────────────────
+        'required'                               => 'obligatoriu',
+        '%s is a required field.'                => '%s este un câmp obligatoriu.',
+        'This field is required.'                => 'Acest câmp este obligatoriu.',
+        'Please enter a valid email address.'    => 'Introduceți o adresă de email validă.',
+        'Invalid email address.'                 => 'Adresă de email invalidă.',
+    ];
+
+    if ( isset( $map[ $text ] ) ) {
+        return $map[ $text ];
     }
 
     return $translated_text;
@@ -299,9 +514,23 @@ function gart_ajax_filter_products() {
         'post_status'    => 'publish',
         'paged'          => $paged,
         'posts_per_page' => 16,
+        'tax_query'      => array(
+            array(
+                'taxonomy' => 'product_type',
+                'field'    => 'slug',
+                'terms'    => 'auction',
+                'operator' => 'NOT IN',
+            ),
+            array(
+                'taxonomy' => 'product_cat',
+                'field'    => 'slug',
+                'terms'    => 'licitatii',
+                'operator' => 'NOT IN',
+            ),
+        ),
     );
 
-    $tax_query = array('relation' => 'AND');
+    $tax_query = $args['tax_query'];
 
     if (!empty($_POST['product_cat'])) {
         $tax_query[] = array(
@@ -451,7 +680,7 @@ function gart_ajax_load_more_posts() {
     ));
 }
 
-// Translate WooCommerce breadcrumb "Home" to Romanian ("Acasă")
+// Translate WooCommerce breadcrumb
 add_filter( 'woocommerce_breadcrumb_defaults', 'gart_custom_breadcrumb_home' );
 function gart_custom_breadcrumb_home( $defaults ) {
     $defaults['home'] = 'Acasă';
