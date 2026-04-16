@@ -18,8 +18,16 @@ do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 		<div class="variations" role="presentation">
 			<?php foreach ( $attributes as $attribute_name => $options ) : ?>
 				<div class="variation-row">
-					<div class="label">
+					<div class="label flex justify-between uppercase">
 						<label for="<?php echo esc_attr( sanitize_title( $attribute_name ) ); ?>"><?php echo wc_attribute_label( $attribute_name ); ?></label>
+						<?php 
+						if ( $attribute_name === 'pa_marime' ) : 
+							$sizes_popup = get_field('sizes_popup');
+							if ( $sizes_popup ) : ?>
+								<a href="#" class="sizes-guide-trigger">Ghid Mărimi</a>
+								<div id="sizes-guide-content" style="display:none;"><?php echo $sizes_popup; ?></div>
+							<?php endif;
+						endif; ?>
 					</div>
 					<div class="value">
 						<?php

@@ -155,6 +155,21 @@ function gart_inject_login_modal() {
     <?php
 }
 
+// Inject Sizes Guide modal HTML
+add_action( 'wp_footer', 'gart_inject_sizes_modal' );
+function gart_inject_sizes_modal() {
+    ?>
+    <div id="sizes-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-close close-modal-btn">
+                <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512"><path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"></path></svg>
+            </div>
+            <div id="sizes-modal-content"></div>
+        </div>
+    </div>
+    <?php
+}
+
 // ────── Secure AJAX Login ──────
 add_action( 'wp_ajax_nopriv_gart_login', 'gart_ajax_login' );
 add_action( 'wp_ajax_gart_login', 'gart_ajax_login' );

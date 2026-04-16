@@ -54,6 +54,14 @@ body {
     gap: 20px;
 }
 
+.justify-between {
+    justify-content: space-between;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
 .item-center {
     align-items: center;
     justify-content: center;
@@ -800,6 +808,45 @@ body.drawer-open {
     margin-bottom: 5px;
 }
 
+.custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+}
+
+.custom-modal.active {
+    display: block;
+}
+
+.modal-close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    color: var(--color-gray-600);
+    transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--color-black);
+}
+
+.modal-close svg {
+    width: 100%;
+    height: 100%;
+}
+
+#sizes-modal .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
 .modal-content h3 {
     font-size: 24px;
     margin-top: 0;
@@ -842,6 +889,12 @@ body.drawer-open {
 
 .modal-content-footer a:hover {
     color: oklch(44.6% .245 262.881);
+}
+
+#sizes-modal .modal-content ul li {
+    font-size: 12px;
+    color: var(--color-gray-600);
+    margin-bottom: 5px;
 }
 
 /* Shop */
@@ -1758,21 +1811,26 @@ section.shop-container {
     .auction-advert-content {
         flex-direction: column;
         gap: 0;
-        display: block; /* Ensure it's not flex if it's breaking */
+        display: block;
+        /* Ensure it's not flex if it's breaking */
     }
+
     .auction-advert-image {
         width: 100% !important;
         line-height: 0;
     }
+
     .auction-advert-image img {
         width: 100% !important;
         height: 300px;
     }
+
     .auction-advert-text {
         width: 100% !important;
         padding: 30px 40px !important;
         box-sizing: border-box;
     }
+
     .advert-description {
         max-width: 100%;
     }
@@ -1782,26 +1840,33 @@ section.shop-container {
     .shop-auction-advert {
         margin-bottom: 30px;
     }
+
     .auction-advert-text {
         padding: 30px 20px !important;
     }
+
     .auction-advert-text h2 {
         font-size: 26px;
     }
+
     .auction-advert-image img {
         height: 250px;
     }
+
     .advert-meta {
         flex-direction: column;
         gap: 20px;
     }
+
     .advert-bidding-form {
         max-width: 100%;
     }
+
     .bid-form {
         flex-direction: column !important;
         align-items: stretch !important;
     }
+
     .bid-form input[type="number"] {
         width: 100% !important;
         margin-bottom: 10px;
@@ -1861,6 +1926,12 @@ section.shop-container {
     margin-top: 25px;
 }
 
+.single_product_wrapper .variation-row .label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .single_product_wrapper .variation-row .label label {
     font-size: 12px;
     text-transform: uppercase;
@@ -1868,6 +1939,21 @@ section.shop-container {
     margin-bottom: 10px !important;
     display: block;
     letter-spacing: 1px;
+}
+
+.sizes-guide-trigger {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-decoration: underline;
+    margin-bottom: 10px;
+    color: var(--color-gray-600);
+    transition: color 0.3s ease;
+}
+
+.sizes-guide-trigger:hover {
+    color: var(--color-black);
 }
 
 .single_product_wrapper .reset_variations {

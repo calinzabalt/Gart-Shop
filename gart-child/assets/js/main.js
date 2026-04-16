@@ -29,6 +29,25 @@ jQuery(function ($) {
         $backdrop.addClass('is-visible');
     });
 
+    // Open Sizes Guide modal
+    $(document).on('click', '.sizes-guide-trigger', function (e) {
+        e.preventDefault();
+        const content = $('#sizes-guide-content').html();
+        if (content) {
+            $('#sizes-modal-content').html(content);
+            $('#sizes-modal').addClass('active');
+            $backdrop.addClass('is-visible');
+        }
+    });
+
+    // Close Modals
+    $(document).on('click', '.close-modal-btn, .custom-modal, #login-register-modal, #drawer-backdrop', function (e) {
+        if (e.target === this || $(this).hasClass('close-modal-btn') || $(e.target).closest('.close-modal-btn').length) {
+            $('.custom-modal, #login-register-modal').removeClass('active');
+            $backdrop.removeClass('is-visible');
+        }
+    });
+
     // Open Register modal
     $(document).on('click', '.register-link', function (e) {
         e.preventDefault();
@@ -136,17 +155,7 @@ jQuery(function ($) {
         });
     });
 
-    // Close modal
-    $(document).on('click', '.close-modal, #login-register-modal', function (e) {
-        if (e.target === this) {
-            $('#login-register-modal').removeClass('active');
-            $backdrop.removeClass('is-visible');
-        }
-    });
 
-    $backdrop.on('click', function () {
-        $('#login-register-modal').removeClass('active');
-    });
 
     // ==================== DRAWER ====================
     const $toggle = $('#drawer-toggle');
