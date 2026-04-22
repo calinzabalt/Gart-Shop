@@ -13,6 +13,12 @@
 
 <div class="single_article_container">
     <div class="container">
+        <a href="javascript:history.back()" class="go-back">
+            <svg width="10" height="8" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 7H1M1 7L7 13M1 7L7 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Înapoi
+        </a>
         <div class="article_header text-center">
             <div class="post_category">
                 <?php 

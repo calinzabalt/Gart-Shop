@@ -22,11 +22,18 @@
                     <div class="items">
                         <?php foreach($contact_information as $info):?>
                             <div class="item">
-                                <div class="item_title">
-                                    <?php echo $info['text'];?>
+                                <div class="left">
+                                    <div class="item_icon">
+                                        <?php echo wp_get_attachment_image($info['icon'], 'large');?>
+                                    </div>
                                 </div>
-                                <div class="item_info">
-                                    <?php echo $info['info'];?>
+                                <div class="right">
+                                    <div class="item_title">
+                                        <?php echo $info['text'];?>
+                                    </div>
+                                    <div class="item_info">
+                                        <?php echo $info['info'];?>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach;?>

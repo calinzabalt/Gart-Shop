@@ -18,7 +18,9 @@
                 <div class="flex">
                     <div class="col-25">
                         <div class="footer_logo">
-                            <?php echo wp_get_attachment_image($footer_logo, 'medium');?>
+                            <a href="/">
+                                <?php echo wp_get_attachment_image($footer_logo, 'medium');?>
+                            </a>
                         </div>
                         <div class="footer_description">
                             <p><?php echo $footer_description;?></p>

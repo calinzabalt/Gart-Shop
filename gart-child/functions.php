@@ -574,6 +574,7 @@ function gart_ajax_filter_products() {
 
     if (!empty($_POST['orderby'])) {
         $orderby = sanitize_text_field($_POST['orderby']);
+        $_GET['orderby'] = $orderby; // Set this so the re-rendered ordering dropdown selects the correct option
         switch ($orderby) {
             case 'price':
                 $args['meta_key'] = '_price';

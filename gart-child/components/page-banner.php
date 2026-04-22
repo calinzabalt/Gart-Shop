@@ -14,32 +14,43 @@
     $button_link = is_array($button) && isset($button['url']) ? $button['url'] : '';
     $overlay = get_field('overlay', $context);
     $bg_image_id = get_field('background_image', $context);
+    $video = get_field('video', $context);
 ?>
 
 <section class="banner">
-    <?php echo wp_get_attachment_image( $bg_image_id, 'full' ); ?>
+    <?php if ( $video ) : ?>
+        <video class="banner_video" autoplay loop muted playsinline poster="<?php echo wp_get_attachment_image_url( $bg_image_id, 'full' ); ?>">
+            <source src="<?php echo is_array($video) ? $video['url'] : $video; ?>" type="video/mp4">
+        </video>
+    <?php else : ?>
+        <?php echo wp_get_attachment_image( $bg_image_id, 'full' ); ?>
+    <?php endif; ?>
+
     <div class="banner_content">
         <div class="container">
-            
-            <?php if ( ! is_front_page() ) : ?>
-                <div class="breadcrumb">
-                    <?php if ( function_exists('woocommerce_breadcrumb') ) { woocommerce_breadcrumb(); } ?>
-                </div>
-            <?php endif; ?>
+            <?php if ( $video ) : ?>
+                <h1 class="screen-reader-text"><?php echo $title; ?></h1>
+            <?php else : ?>
+                <?php if ( ! is_front_page() ) : ?>
+                    <div class="breadcrumb">
+                        <?php if ( function_exists('woocommerce_breadcrumb') ) { woocommerce_breadcrumb(); } ?>
+                    </div>
+                <?php endif; ?>
 
-            <h1 class="banner_title"><?php echo $title; ?></h1>
+                <h1 class="banner_title"><?php echo $title; ?></h1>
 
-            <?php if(!empty($description)): ?>
-                <p class="banner_description"><?php echo $description; ?></p>
-            <?php endif; ?>
+                <?php if(!empty($description)): ?>
+                    <p class="banner_description"><?php echo $description; ?></p>
+                <?php endif; ?>
 
-            <?php if(!empty($button)): ?>
-                <div class="cta">
-                    <a class="arrow_button" href="<?php echo $button_link; ?>">
-                        <?php echo $button_title; ?>
-                        <span>→</span>
-                    </a>
-                </div>
+                <?php if(!empty($button)): ?>
+                    <div class="cta">
+                        <a class="arrow_button" href="<?php echo $button_link; ?>">
+                            <?php echo $button_title; ?>
+                            <span>→</span>
+                        </a>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>   
         </div>
     </div>

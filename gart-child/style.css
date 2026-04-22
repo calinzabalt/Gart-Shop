@@ -10,6 +10,20 @@
  License URI:  http://www.gnu.org/licenses/gpl-2.0.html
 */
 
+/* Utilities */
+.screen-reader-text {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute !important;
+    width: 1px;
+    word-wrap: normal !important;
+}
+
 :root {
     --font-primary: "Montserrat", system-ui, -apple-system, sans-serif;
     --font-secondary: "Playfair Display", Georgia, serif;
@@ -112,6 +126,32 @@ a {
 
 .arrow_button:hover span {
     margin-left: 18px;
+}
+
+.go-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-gray-600);
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.go-back svg {
+    transition: transform 0.3s ease;
+}
+
+.go-back:hover {
+    color: #000;
+}
+
+.go-back:hover svg {
+    transform: translateX(-5px);
 }
 
 .full_button {
@@ -566,7 +606,8 @@ body.drawer-open {
     background-color: var(--color-neutral-900);
 }
 
-.banner img {
+.banner img,
+.banner_video {
     width: 100%;
     height: 100%;
     position: absolute;
@@ -1478,7 +1519,7 @@ section.shop-container {
 .contact_us .items .item_title {
     font-size: 18px;
     font-weight: 500;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .contact_us .items .item_info p {
@@ -1497,6 +1538,16 @@ section.shop-container {
 
 .contact_us .items .item {
     margin-bottom: 30px;
+    display: flex;
+}
+
+.contact_us .items .item .left{
+    margin-right: 20px;
+}
+
+.contact_us .items .item .item_icon img {
+    width: 48px;
+    height: 48px;
 }
 
 .contact_us .social_title {
@@ -2057,12 +2108,30 @@ section.shop-container {
 
 .single_product_wrapper div.product div.images .woocommerce-product-gallery__image {
     width: 100% !important;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
 }
 
-.single_product_wrapper .container {
+.single_product_wrapper div.product div.images .woocommerce-product-gallery__image img {
+    transition: transform 0.5s ease;
+    width: 100%;
+}
+
+.single_product_wrapper div.product div.images .woocommerce-product-gallery__image:hover img {
+    transform: scale(1.1);
+}
+
+.single_product_wrapper div.product div.images .woocommerce-product-gallery__image a {
+    cursor: default;
+}
+
+.single_product_wrapper .container:not(.standard-width) {
     max-width: 100%;
     padding-left: 0;
+}
+
+.single_product_wrapper .container.standard-width {
+    margin-bottom: 20px;
 }
 
 .related.products {
@@ -2180,6 +2249,19 @@ section.shop-container {
 .woocommerce-account .woocommerce-MyAccount-navigation ul li a:hover {
     background-color: var(--color-black);
     color: var(--color-white);
+}
+
+/* Contact Form 7 */
+.wpcf7-response-output {
+    border: none !important;
+}
+
+.wpcf7-not-valid-tip {
+    display: none !important;
+}
+
+.wpcf7-form-control.wpcf7-not-valid {
+    border-color: #ff0000 !important;
 }
 
 .woocommerce-account .woocommerce-MyAccount-content {

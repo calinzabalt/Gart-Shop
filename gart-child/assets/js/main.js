@@ -338,8 +338,21 @@ jQuery(function ($) {
         }
     });
 
-    $(document).on('change', '.woocommerce-ordering select', function() {
+    $(document).on('change', '.woocommerce-ordering select', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         ajaxFilterProducts(1, false);
+        return false;
+    });
+
+    $(document).on('submit', '.woocommerce-ordering', function(e) {
+        e.preventDefault();
+        return false;
+    });
+
+    // Prevent gallery click
+    $(document).on('click', '.woocommerce-product-gallery__image a', function(e) {
+        e.preventDefault();
     });
 
 });
