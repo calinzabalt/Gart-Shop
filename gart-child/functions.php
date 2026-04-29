@@ -94,17 +94,60 @@ function gart_child_enqueue_scripts() {
 
     wp_localize_script( 'gart-main', 'gart_ajax', array(
         'url'   => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('gart_nonce')
+        'nonce' => wp_create_nonce('gart_nonce'),
+        'lang'  => function_exists('pll_current_language') ? pll_current_language() : 'ro',
+        'strings' => array(
+            'auth' => gart_t('Autentificare'),
+            'register' => gart_t('Înregistrare'),
+            'lost_pass' => gart_t('Recuperare Parolă'),
+            'user_or_email' => gart_t('Nume utilizator sau adresă email *'),
+            'password' => gart_t('Parolă *'),
+            'remember_me' => gart_t('Ține-mă minte'),
+            'create_account' => gart_t('Creează cont'),
+            'forgot_pass_link' => gart_t('Ți-ai pierdut parola?'),
+            'username' => gart_t('Nume utilizator *'),
+            'email' => gart_t('Email *'),
+            'already_account' => gart_t('Ai deja un cont? Autentificare'),
+            'back_to_login' => gart_t('Înapoi la Autentificare'),
+            'wait' => gart_t('Vă rugăm așteptați...'),
+            'error' => gart_t('A apărut o eroare.'),
+            'request_error' => gart_t('O eroare a apărut la procesarea solicitării.'),
+            'loading' => gart_t('Se încarcă...'),
+            'load_more' => gart_t('Încarcă mai multe'),
+            'no_products' => gart_t('Niciun produs găsit.'),
+            'reset_pass' => gart_t('Resetare Parolă'),
+            'success' => gart_t('Succes!'),
+        )
     ) );
 
     // WooCommerce Blocks – Romanian JS translations (must load before Blocks render)
-    wp_enqueue_script(
-        'gart-wc-blocks-ro',
-        get_stylesheet_directory_uri() . '/assets/js/wc-blocks-ro.js',
-        array( 'wp-hooks', 'wp-i18n' ),
-        '1.1.1',
-        false  // load in <head> so it runs before React/Blocks hydration
-    );
+    $lang = function_exists('pll_current_language') ? pll_current_language() : '';
+    $locale = get_locale();
+    $is_en = ($lang === 'en' || strpos($lang, 'en') === 0 || strpos($locale, 'en') === 0);
+
+    if ( ! $is_en ) {
+        wp_enqueue_script(
+            'gart-wc-blocks-ro',
+            get_stylesheet_directory_uri() . '/assets/js/wc-blocks-ro.js',
+            array( 'wp-hooks', 'wp-i18n' ),
+            '1.1.1',
+            false  // load in <head> so it runs before React/Blocks hydration
+        );
+    } else {
+        // Force English for key blocks strings in JS
+        wp_add_inline_script('wp-hooks', "
+            (function() {
+                if (typeof wp === 'undefined' || !wp.hooks) return;
+                const fixEn = (t, text) => {
+                    if (text === 'Cart totals' || text === 'Cart Totals') return 'Cart Totals';
+                    if (text === 'Proceed to Checkout') return 'Proceed to Checkout';
+                    return t;
+                };
+                wp.hooks.addFilter('i18n.gettext_woocommerce', 'gart/en-fix', fixEn);
+                wp.hooks.addFilter('i18n.gettext_woo-gutenberg-products-block', 'gart/en-fix-blocks', fixEn);
+            })();
+        ", 'before');
+    }
 }
 
 function gart_enqueue_google_fonts() {
@@ -136,6 +179,52 @@ add_theme_support('custom-logo');
 // Load WooCommerce overrides
 if ( file_exists( get_stylesheet_directory() . '/inc/woocommerce.php' ) ) {
     require_once get_stylesheet_directory() . '/inc/woocommerce.php';
+}
+
+// Load Polylang translations
+if ( file_exists( get_stylesheet_directory() . '/inc/translations.php' ) ) {
+    require_once get_stylesheet_directory() . '/inc/translations.php';
+}
+
+/**
+ * Polylang WooCommerce Synchronization
+ * Ensures WooCommerce uses the correct page ID for each language
+ */
+if ( function_exists( 'pll_get_post' ) ) {
+    $woo_pages = array( 'cart', 'checkout', 'myaccount', 'shop' );
+    foreach ( $woo_pages as $page ) {
+        add_filter( 'option_woocommerce_' . $page . '_page_id', 'gart_pll_woo_page_id' );
+        // Also filter the direct WooCommerce page ID functions for better compatibility
+        add_filter( 'woocommerce_get_' . $page . '_page_id', 'gart_pll_woo_page_id' );
+    }
+}
+
+function gart_pll_woo_page_id( $id ) {
+    if ( ! $id ) return $id;
+    if ( function_exists( 'pll_get_post' ) ) {
+        $translated_id = pll_get_post( $id );
+        if ( $translated_id ) {
+            return $translated_id;
+        }
+    }
+    return $id;
+}
+
+// Ensure the URLs themselves are filtered as a last resort
+add_filter( 'woocommerce_get_cart_url', 'gart_fix_pll_woo_url', 99 );
+add_filter( 'woocommerce_get_checkout_url', 'gart_fix_pll_woo_url', 99 );
+
+function gart_fix_pll_woo_url( $url ) {
+    if ( function_exists( 'pll_get_post' ) ) {
+        // Find which page this is for
+        $option_name = current_filter() === 'woocommerce_get_cart_url' ? 'woocommerce_cart_page_id' : 'woocommerce_checkout_page_id';
+        $base_id = get_option( $option_name );
+        $translated_id = pll_get_post( $base_id );
+        if ( $translated_id ) {
+            return get_permalink( $translated_id );
+        }
+    }
+    return $url;
 }
 
 register_nav_menus([
@@ -181,7 +270,7 @@ function gart_ajax_login() {
     $remember = isset($_POST['remember']) ? true : false;
 
     if ( empty($username) || empty($password) ) {
-        wp_send_json_error( array('message' => 'Toate câmpurile sunt obligatorii.') );
+        wp_send_json_error( array('message' => gart_t('Toate câmpurile sunt obligatorii.')) );
     }
 
     $user = wp_signon( array(
@@ -191,10 +280,10 @@ function gart_ajax_login() {
     ), is_ssl() );
 
     if ( is_wp_error($user) ) {
-        wp_send_json_error( array('message' => 'Autentificare eșuată. Verificați datele și încercați din nou.') );
+        wp_send_json_error( array('message' => gart_t('Autentificare eșuată. Verificați datele și încercați din nou.')) );
     }
 
-    wp_send_json_success( array('message' => 'Autentificare cu succes!') );
+    wp_send_json_success( array('message' => gart_t('Autentificare cu succes!')) );
 }
 
 // ────── Secure AJAX Lost Password ──────
@@ -206,7 +295,7 @@ function gart_ajax_lost_password() {
     $user_login = isset($_POST['user_login']) ? sanitize_user($_POST['user_login']) : '';
 
     if ( empty($user_login) ) {
-        wp_send_json_error( array('message' => 'Vă rugăm să introduceți un nume de utilizator sau o adresă de email.') );
+        wp_send_json_error( array('message' => gart_t('Vă rugăm să introduceți un nume de utilizator sau o adresă de email.')) );
     }
 
     $user_data = get_user_by( 'email', $user_login );
@@ -215,16 +304,16 @@ function gart_ajax_lost_password() {
     }
 
     if ( ! $user_data ) {
-        wp_send_json_error( array('message' => 'Nu există niciun cont cu acest nume de utilizator sau adresă de email.') );
+        wp_send_json_error( array('message' => gart_t('Nu există niciun cont cu acest nume de utilizator sau adresă de email.')) );
     }
 
     $result = retrieve_password( $user_login );
 
     if ( is_wp_error( $result ) ) {
-        wp_send_json_error( array('message' => 'A apărut o eroare la trimiterea emailului de resetare.') );
+        wp_send_json_error( array('message' => gart_t('A apărut o eroare la trimiterea emailului de resetare.')) );
     }
 
-    wp_send_json_success( array('message' => 'Un email de resetare a parolei a fost trimis.') );
+    wp_send_json_success( array('message' => gart_t('Un email de resetare a parolei a fost trimis.')) );
 }
 
 // ────── Secure AJAX Register ──────
@@ -238,15 +327,15 @@ function gart_ajax_register() {
     $password = isset($_POST['password']) ? $_POST['password'] : '';
 
     if ( empty($username) || empty($email) || empty($password) ) {
-        wp_send_json_error( array('message' => 'Toate câmpurile sunt obligatorii.') );
+        wp_send_json_error( array('message' => gart_t('Toate câmpurile sunt obligatorii.')) );
     }
 
     if ( !is_email($email) ) {
-        wp_send_json_error( array('message' => 'Adresă de email invalidă.') );
+        wp_send_json_error( array('message' => gart_t('Adresă de email invalidă.')) );
     }
 
     if ( username_exists($username) || email_exists($email) ) {
-        wp_send_json_error( array('message' => 'Numele de utilizator sau emailul este deja folosit.') );
+        wp_send_json_error( array('message' => gart_t('Numele de utilizator sau emailul este deja folosit.')) );
     }
 
     $user_id = wc_create_new_customer( $email, $username, $password );
@@ -261,24 +350,238 @@ function gart_ajax_register() {
         'remember'      => true
     ), is_ssl() );
 
-    wp_send_json_success( array('message' => 'Înregistrare cu succes!') );
+    wp_send_json_success( array('message' => gart_t('Înregistrare cu succes!')) );
 }
 
 add_action('acf/init', function() {
-    // Safety check in case ACF isn't active
     if (function_exists('acf_add_options_page')) {
         acf_add_options_page([
-            'page_title'    => 'Theme Settings',
-            'menu_title'    => 'Theme Settings',
-            'menu_slug'     => 'theme-settings',
-            'capability'    => 'edit_posts',
-            'redirect'      => false,
-            'position'      => 5,
-            'icon_url'      => 'dashicons-admin-customizer',
+            'page_title'      => 'Theme Settings',
+            'menu_title'      => 'Theme Settings',
+            'menu_slug'       => 'theme-settings',
+            'capability'      => 'edit_posts',
+            'redirect'        => false,
+            'position'        => 5,
+            'icon_url'        => 'dashicons-admin-customizer',
             'updated_message' => __('Theme settings updated.', 'your-text-domain'),
         ]);
+
+        // Add a sub-page for each non-default Polylang language
+        if ( function_exists('pll_languages_list') && function_exists('pll_default_language') ) {
+            foreach ( pll_languages_list() as $lang ) {
+                if ( $lang === pll_default_language() ) continue;
+                acf_add_options_sub_page([
+                    'page_title'  => 'Theme Settings (' . strtoupper($lang) . ')',
+                    'menu_title'  => strtoupper($lang),
+                    'parent_slug' => 'theme-settings',
+                    'post_id'     => 'options_' . $lang,
+                ]);
+            }
+        }
     }
 });
+
+/**
+ * Language-aware ACF option getter.
+ * Reads from the translated options page first; falls back to the default.
+ */
+function gart_get_option( $field ) {
+    if ( function_exists('pll_current_language') && function_exists('pll_default_language') ) {
+        $lang = pll_current_language();
+        if ( $lang && $lang !== pll_default_language() ) {
+            $val = get_field( $field, 'options_' . $lang );
+            if ( $val ) return $val;
+        }
+    }
+    return get_field( $field, 'option' );
+}
+
+/**
+ * Direct translation helper.
+ * Usage: gart_t('Filtre') outputs 'Filters' on EN, 'Filtre' on RO.
+ */
+function gart_t( $text ) {
+    $lang = function_exists('pll_current_language') ? pll_current_language() : '';
+    $locale = get_locale();
+    
+    // Support 'en', 'en_US', 'en_GB', etc. from both Polylang and WP Locale
+    $is_en = ($lang === 'en' || strpos($lang, 'en') === 0 || strpos($locale, 'en') === 0);
+    
+    if ( ! $is_en ) {
+        return $text;
+    }
+
+    static $en = null;
+    if ( $en === null ) {
+        $en = array(
+            // ── Theme UI ──
+            'Toate drepturile rezervate.'                           => 'All rights reserved.',
+            'Încarcă mai multe'                                     => 'Load more',
+            'Filtre'                                                => 'Filters',
+            'Resetează'                                             => 'Reset',
+            'CATEGORIE'                                             => 'CATEGORY',
+            'MĂRIME'                                                => 'SIZE',
+            'CULOARE'                                               => 'COLOR',
+            'Înapoi'                                                => 'Back',
+            'CANTITATE'                                             => 'QUANTITY',
+            'Mărime'                                                => 'Size',
+
+            // ── WooCommerce Custom ──
+            'ADAUGĂ ÎN COȘ'                                        => 'ADD TO CART',
+            'ADAUGĂ LA FAVORITE'                                    => 'ADD TO WISHLIST',
+            'Vezi coșul'                                            => 'View cart',
+            'Produse Similare'                                      => 'Similar Products',
+            'Acasă'                                                 => 'Home',
+            'Afisare produsul'                                      => 'Showing the product',
+            'Afisare toate cele %d produse'                         => 'Showing all %d products',
+            'Afisare %1$d–%2$d din %3$d produse'                   => 'Showing %1$d–%2$d of %3$d products',
+            'Se afișează %d produse'                               => 'Showing %d products',
+            'Se afisează %d produse'                               => 'Showing %d products',
+            'Se afiseaza %d produse'                               => 'Showing %d products',
+            'Se afişează %d produse'                               => 'Showing %d products',
+            '%s a fost adăugat în coșul tău.'                       => '%s has been added to your cart.',
+
+            // ── Account & AJAX ──
+            'Toate câmpurile sunt obligatorii.'                     => 'All fields are required.',
+            'Adresă de email invalidă.'                             => 'Invalid email address.',
+            'Numele de utilizator sau emailul este deja folosit.'   => 'Username or email already in use.',
+            'Înregistrare cu succes!'                               => 'Registration successful!',
+            'Autentificare cu succes!'                               => 'Login successful!',
+            'Autentificare eșuată. Verificați datele și încercați din nou.' => 'Login failed. Check your credentials and try again.',
+            'Vă rugăm să introduceți un nume de utilizator sau o adresă de email.' => 'Please enter a username or email address.',
+            'Nu există niciun cont cu acest nume de utilizator sau adresă de email.' => 'No account found with that username or email.',
+            'A apărut o eroare la trimiterea emailului de resetare.' => 'An error occurred while sending the reset email.',
+            'Un email de resetare a parolei a fost trimis.'         => 'A password reset email has been sent.',
+
+            // ── JS Localized ──
+            'Autentificare'                                         => 'Login',
+            'Înregistrare'                                          => 'Register',
+            'Recuperare Parolă'                                     => 'Password Recovery',
+            'Nume utilizator sau adresă email *'                    => 'Username or email *',
+            'Parolă *'                                              => 'Password *',
+            'Ține-mă minte'                                         => 'Remember me',
+            'Creează cont'                                          => 'Create account',
+            'Ți-ai pierdut parola?'                                 => 'Lost your password?',
+            'Nume utilizator *'                                     => 'Username *',
+            'Email *'                                               => 'Email *',
+            'Ai deja un cont? Autentificare'                        => 'Already have an account? Login',
+            'Înapoi la Autentificare'                               => 'Back to Login',
+            'Vă rugăm așteptați...'                                 => 'Please wait...',
+            'A apărut o eroare.'                                    => 'An error occurred.',
+            'O eroare a apărut la procesarea solicitării.'           => 'An error occurred while processing the request.',
+            'Se încarcă...'                                         => 'Loading...',
+            'Niciun produs găsit.'                                  => 'No products found.',
+            'Resetare Parolă'                                       => 'Reset Password',
+            'Succes!'                                               => 'Success!',
+
+            // ── Wishlist ──
+            'Nu ai adaugat niciun produs la favorite inca.'         => 'You haven\'t added any products to your wishlist yet.',
+            'Produs'                                                => 'Product',
+            'Pret'                                                  => 'Price',
+            'Stoc'                                                  => 'Stock',
+            'In Stoc'                                               => 'In Stock',
+            'Stoc Epuizat'                                          => 'Out of Stock',
+            'Sterge articol'                                        => 'Remove item',
+            'ELIMINA DIN FAVORITE'                                  => 'REMOVE FROM WISHLIST',
+
+            // ── Auction ──
+            'LICITAȚIE ACTIVĂ'                                      => 'ACTIVE AUCTION',
+            'LICITATIE ACTIVĂ'                                      => 'ACTIVE AUCTION',
+            'LICITATIE ACTIVA'                                      => 'ACTIVE AUCTION',
+            'Licitație încheiată'                                   => 'Auction ended',
+            'Licitatie încheiată'                                   => 'Auction ended',
+            'Licitatie incheiata'                                   => 'Auction ended',
+            'Se încheie în:'                                        => 'Ends in:',
+            'Se incheie in:'                                        => 'Ends in:',
+            'Bid curent:'                                           => 'Current bid:',
+            'Plasează Bid'                                          => 'Place Bid',
+            'Plaseaza Bid'                                          => 'Place Bid',
+            'Minimum bid: %s'                                       => 'Minimum bid: %s',
+            'Câștigător: <strong>%s</strong>'                       => 'Winner: <strong>%s</strong>',
+            'Castigator: <strong>%s</strong>'                       => 'Winner: <strong>%s</strong>',
+            'Felicitări! Ai câștigat această licitație.'            => 'Congratulations! You won this auction.',
+            'Adaugă în coș'                                         => 'Add to cart',
+            'Nicio ofertă validă.'                                  => 'No valid bids.',
+            'Istoric Licitație'                                     => 'Auction History',
+            'Niciun bid momentan.'                                  => 'No bids yet.',
+            'Trebuie să fii autentificat pentru a licita.'          => 'You must be logged in to bid.',
+            'Bid nevalid.'                                          => 'Invalid bid.',
+            'Licitația s-a încheiat deja.'                          => 'The auction has already ended.',
+            'Bidul trebuie să fie cel puțin %s.'                    => 'The bid must be at least %s.',
+            'Bid plasat cu succes!'                                 => 'Bid placed successfully!',
+            'Câștigă Licitația'                                     => 'Win the Auction',
+            'Vezi detalii produs'                                   => 'View product details',
+            'în urmă'                                               => 'ago',
+            'Ghid Mărimi'                                           => 'Size Guide',
+            'z'                                                     => 'd',
+            'Se trimite...'                                         => 'Sending...',
+            'Vă rugăm introduceți o sumă validă.'                   => 'Please enter a valid amount.',
+            'Eroare la plasarea bidului.'                            => 'Error placing bid.',
+            'Eroare server. Încercați din nou.'                      => 'Server error. Please try again.',
+            'Minimum bid:'                                          => 'Minimum bid:',
+            'Timp de citire:'                                       => 'Reading time:',
+            'minut'                                                 => 'minute',
+            'minute'                                                => 'minutes',
+            'Distribuie acest articol:'                             => 'Share this article:',
+            'Articole Similare'                                     => 'Similar Articles',
+        );
+    }
+
+    return isset( $en[ $text ] ) ? $en[ $text ] : $text;
+}
+
+/**
+ * Translate WooCommerce attribute labels on the frontend
+ * e.g. "Mărime" → "Size" when viewing the English version
+ */
+add_filter( 'woocommerce_attribute_label', 'gart_translate_attribute_label', 10, 3 );
+function gart_translate_attribute_label( $label, $name, $product ) {
+    if ( function_exists('pll_current_language') && pll_current_language() === 'en' ) {
+        $map = array(
+            'Mărime'  => 'Size',
+            'Culoare' => 'Color',
+            'Marime'  => 'Size',
+        );
+        if ( isset( $map[ $label ] ) ) {
+            return $map[ $label ];
+        }
+    }
+    return $label;
+}
+
+/**
+ * Make the Wishlist language-agnostic: always store the default-language product ID.
+ * This ensures items added on /en/ appear in the RO wishlist and vice-versa,
+ * the same way WooCommerce cart already works.
+ */
+add_filter( 'gart_wishlist_product_id', 'gart_wishlist_normalize_product_id' );
+function gart_wishlist_normalize_product_id( $product_id ) {
+    if ( function_exists('pll_get_post') ) {
+        $default_id = pll_get_post( $product_id, pll_default_language() );
+        if ( $default_id ) {
+            return $default_id;
+        }
+    }
+    return $product_id;
+}
+
+/**
+ * Get the current wishlist count
+ */
+function gart_get_wishlist_count() {
+    if ( is_user_logged_in() ) {
+        $user_id = get_current_user_id();
+        $wishlist = get_user_meta( $user_id, '_gart_wishlist_items', true );
+    } else {
+        $wishlist = isset( $_COOKIE['gart_wishlist_items'] ) ? json_decode( stripslashes( $_COOKIE['gart_wishlist_items'] ), true ) : array();
+    }
+    
+    if ( ! is_array( $wishlist ) ) {
+        return 0;
+    }
+    
+    return count( $wishlist );
+}
 
 add_filter('gettext', 'gart_translate_woocommerce_strings', 999, 3);
 add_filter( 'wc_add_to_cart_message_html', 'gart_ro_add_to_cart_message', 10, 3 );
@@ -293,11 +596,14 @@ function gart_ro_add_to_cart_message( $message, $products, $show_qty ) {
     $products_list = implode( ', ', $titles );
     $cart_url      = wc_get_cart_url();
 
+    $vezi_cosul = gart_t('Vezi coșul');
+    $msg = gart_t('%s a fost adăugat în coșul tău.');
+
     return sprintf(
-        '%s a fost adăugat în coșul tău. <a href="%s" class="button wc-forward">%s</a>',
+        $msg . ' <a href="%s" class="button wc-forward">%s</a>',
         $products_list,
         esc_url( $cart_url ),
-        'Vezi coșul'
+        $vezi_cosul
     );
 }
 
@@ -322,19 +628,54 @@ function gart_ro_ngettext_cart( $translation, $single, $plural, $number, $domain
     return $translation;
 }
 
-function gart_translate_woocommerce_strings($translated_text, $text, $domain) {
+add_filter('gettext', 'gart_translate_woocommerce_strings', 999, 3);
+add_filter('gettext_with_context', 'gart_translate_woocommerce_strings', 999, 4);
+function gart_translate_woocommerce_strings($translated_text, $text, $domain = 'woocommerce') {
     if (is_admin() && !wp_doing_ajax()) {
         return $translated_text;
     }
 
+    $lang = function_exists('pll_current_language') ? pll_current_language() : '';
+    $locale = get_locale();
+    $is_en = ($lang === 'en' || strpos($lang, 'en') === 0 || strpos($locale, 'en') === 0);
+
+    // If language is English, return the original English string ($text)
+    // and skip the Romanian map.
+    if ( $is_en ) {
+        $low_text = strtolower($text);
+        $low_translated = strtolower($translated_text);
+        
+        // Extra safety for the persistent "Total coș" issue
+        if ( $low_text === 'total coș' || $low_translated === 'total coș' || 
+             $low_text === 'total coş' || $low_translated === 'total coş' ||
+             $low_text === 'cart totals' ) {
+            return 'Cart Totals';
+        }
+
+        $en_orderby_map = [
+            'Default sorting'            => 'Default',
+            'Sort by popularity'         => 'Popularity',
+            'Sort by average rating'     => 'Average rating',
+            'Sort by latest'             => 'Latest',
+            'Sort by price: low to high' => 'Price: low to high',
+            'Sort by price: high to low' => 'Price: high to low',
+        ];
+
+        if ( isset( $en_orderby_map[ $text ] ) ) {
+            return $en_orderby_map[ $text ];
+        }
+
+        return $text;
+    }
+
     $map = [
         // ── Shop sorting ──────────────────────────────────────
-        'Default sorting'                        => 'Sortare implicită',
-        'Sort by popularity'                     => 'Sortare după popularitate',
-        'Sort by average rating'                 => 'Sortare după evaluare medie',
-        'Sort by latest'                         => 'Sortare după cele mai recente',
-        'Sort by price: low to high'             => 'Sortare după preț: crescător',
-        'Sort by price: high to low'             => 'Sortare după preț: descrescător',
+        'Default sorting'                        => 'Implicită',
+        'Sort by popularity'                     => 'Popularitate',
+        'Sort by average rating'                 => 'Evaluare medie',
+        'Sort by latest'                         => 'Cele mai recente',
+        'Sort by price: low to high'             => 'Preț: crescător',
+        'Sort by price: high to low'             => 'Preț: descrescător',
 
         // ── Cart notices ──────────────────────────────────────
         'View cart'                              => 'Vezi coșul',
@@ -493,15 +834,19 @@ add_filter( 'woocommerce_result_count', 'custom_result_count_text', 10, 2 );
 function custom_result_count_text( $html, $args ) {
 
     if ( $args['total'] <= 1 ) {
-        return 'Afisare produsul';
+        return gart_t('Afisare produsul');
     }
 
     if ( $args['total'] <= $args['per_page'] ) {
-        return sprintf( 'Afisare toate cele %d produse', $args['total'] );
+        unset($args['first']);
+        unset($args['last']);
+        $all_msg = gart_t('Afisare toate cele %d produse');
+        return sprintf( $all_msg, $args['total'] );
     }
 
+    $range_msg = gart_t('Afisare %1$d–%2$d din %3$d produse');
     return sprintf(
-        'Afisare %1$d–%2$d din %3$d produse',
+        $range_msg,
         $args['first'],
         $args['last'],
         $args['total']
@@ -699,12 +1044,21 @@ function gart_ajax_load_more_posts() {
 // Translate WooCommerce breadcrumb
 add_filter( 'woocommerce_breadcrumb_defaults', 'gart_custom_breadcrumb_home' );
 function gart_custom_breadcrumb_home( $defaults ) {
-    $defaults['home'] = 'Acasă';
+    if ( function_exists('pll_current_language') && pll_current_language() === 'en' ) {
+        $defaults['home'] = 'Home';
+    } else {
+        $defaults['home'] = gart_t('Acasă');
+    }
     return $defaults;
 }
 
 // Global function to get formatted Romanian date
 function gart_get_romanian_date() {
+    $lang = function_exists('pll_current_language') ? pll_current_language() : '';
+    if ( $lang === 'en' ) {
+        return get_the_date('j F Y');
+    }
+
     $months = [
         'January' => 'Ianuarie', 'February' => 'Februarie', 'March' => 'Martie',
         'April' => 'Aprilie', 'May' => 'Mai', 'June' => 'Iunie',
@@ -780,6 +1134,65 @@ function gart_apply_b2b_discount( $price, $product ) {
 add_filter( 'woocommerce_product_get_price', 'gart_apply_b2b_discount', 99, 2 );
 add_filter( 'woocommerce_product_variation_get_price', 'gart_apply_b2b_discount', 99, 2 );
 
+/**
+ * ────── Polylang + WooCommerce Page Fixes ──────
+ * Ensure cart/checkout/account URLs respect the current language.
+ */
+function gart_fix_woo_pages_for_polylang( $id ) {
+    if ( function_exists( 'pll_get_post' ) ) {
+        $translated_id = pll_get_post( $id );
+        if ( $translated_id ) {
+            return $translated_id;
+        }
+    }
+    return $id;
+}
+add_filter( 'woocommerce_get_cart_page_id',      'gart_fix_woo_pages_for_polylang' );
+add_filter( 'woocommerce_get_checkout_page_id',  'gart_fix_woo_pages_for_polylang' );
+add_filter( 'woocommerce_get_myaccount_page_id', 'gart_fix_woo_pages_for_polylang' );
+add_filter( 'woocommerce_get_terms_page_id',     'gart_fix_woo_pages_for_polylang' );
+
+/**
+ * ────── Polylang + WooCommerce: Page Recognition ──────
+ * Ensure is_cart(), is_checkout(), and is_account_page() return true for translations.
+ */
+function gart_woo_fix_is_functions( $is_page, $page_type ) {
+    if ( ! $is_page && function_exists( 'pll_get_post' ) ) {
+        $core_id = wc_get_page_id( $page_type );
+        if ( is_page( pll_get_post( $core_id ) ) ) {
+            return true;
+        }
+    }
+    return $is_page;
+}
+add_filter( 'woocommerce_is_cart',         function($is) { return gart_woo_fix_is_functions($is, 'cart'); });
+add_filter( 'woocommerce_is_checkout',     function($is) { return gart_woo_fix_is_functions($is, 'checkout'); });
+add_filter( 'woocommerce_is_account_page', function($is) { return gart_woo_fix_is_functions($is, 'myaccount'); });
+
+
+/**
+ * ────── Polylang + WooCommerce: Prevent Core Redirects ──────
+ * Forcefully stop WooCommerce from redirecting English pages back to Romanian.
+ */
+add_action( 'template_redirect', 'gart_prevent_woo_polylang_redirects', 1 );
+function gart_prevent_woo_polylang_redirects() {
+    if ( ! function_exists( 'pll_get_post' ) ) return;
+
+    $cart_id     = wc_get_page_id( 'cart' );
+    $checkout_id = wc_get_page_id( 'checkout' );
+    $account_id  = wc_get_page_id( 'myaccount' );
+
+    $is_en_page = is_page( pll_get_post($cart_id) ) || 
+                  is_page( pll_get_post($checkout_id) ) || 
+                  is_page( pll_get_post($account_id) );
+
+    if ( $is_en_page ) {
+        // Stop WooCommerce from redirecting based on its internal page settings
+        remove_action( 'template_redirect', array( 'WC_Query', 'checkout_redirect' ) );
+        remove_action( 'template_redirect', 'wc_checkout_redirect', 10 );
+    }
+}
+
 // Fix caching issue for variable products
 add_filter( 'woocommerce_get_variation_prices_hash', 'gart_b2b_variation_prices_hash', 10, 3 );
 function gart_b2b_variation_prices_hash( $price_hash, $product, $for_display ) {
@@ -792,3 +1205,26 @@ function gart_b2b_variation_prices_hash( $price_hash, $product, $for_display ) {
     }
     return $price_hash;
 }
+
+// Enable Polylang for WooCommerce Products and Taxonomies
+add_filter( 'pll_get_post_types', function( $post_types, $is_settings ) {
+    $post_types['product'] = 'product';
+    return $post_types;
+}, 10, 2 );
+
+add_filter( 'pll_get_taxonomies', function( $taxonomies, $is_settings ) {
+    $taxonomies['product_cat'] = 'product_cat';
+    $taxonomies['product_tag'] = 'product_tag';
+    $taxonomies['pa_marime']   = 'pa_marime';
+    $taxonomies['pa_culoare']  = 'pa_culoare';
+    return $taxonomies;
+}, 10, 2 );
+
+// Force allow core slugs for translations (prevents cart-2, shop-2, etc.)
+add_filter( 'wp_unique_post_slug', function( $slug, $post_ID, $post_status, $post_type, $post_parent, $original_slug ) {
+    $allowed_slugs = array( 'shop', 'cart', 'checkout', 'my-account', 'cos', 'finalizare-comanda', 'contul-meu' );
+    if ( in_array( $original_slug, $allowed_slugs ) && $post_type === 'page' ) {
+        return $original_slug;
+    }
+    return $slug;
+}, 10, 6 );

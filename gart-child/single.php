@@ -6,9 +6,9 @@
     if ($reading_time < 1) {
         $reading_time = 1;
     }
-    $reading_text = $reading_time == 1 ? 'minut' : 'minute';
+    $reading_text = $reading_time == 1 ? gart_t('minut') : gart_t('minute');
     $ro_date = gart_get_romanian_date();
-    $social_icons = get_field('social_icons', 'option');
+    $social_icons = gart_get_option('social_icons');
 ?>
 
 <div class="single_article_container">
@@ -17,7 +17,7 @@
             <svg width="10" height="8" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M17 7H1M1 7L7 13M1 7L7 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Înapoi
+            <?php echo gart_t('Înapoi'); ?>
         </a>
         <div class="article_header text-center">
             <div class="post_category">
@@ -37,7 +37,7 @@
             <div class="article_meta">
                 <span class="post_date"><?php echo $ro_date; ?></span>
                 <span class="meta_separator">|</span>
-                <span class="read_time">Timp de citire: <?php echo $reading_time . ' ' . $reading_text; ?></span>
+                <span class="read_time"><?php echo gart_t('Timp de citire:'); ?> <?php echo $reading_time . ' ' . $reading_text; ?></span>
             </div>
         </div>
     </div>
@@ -54,7 +54,7 @@
         </div>
 
         <div class="article_share">
-            <p>Distribuie acest articol:</p>
+            <p><?php echo gart_t('Distribuie acest articol:'); ?></p>
             
             <div class="social_media">
                 <div class="social_icons">
@@ -72,7 +72,7 @@
 </div>
 
 <?php 
-$title = "Articole Similare";
+$title = gart_t("Articole Similare");
 $categories = wp_get_post_categories(get_the_ID());
 $similar_args = array(
     'post_type'      => 'post',

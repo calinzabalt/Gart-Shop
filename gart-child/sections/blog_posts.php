@@ -21,7 +21,7 @@
 
             <?php if ( $blog_query->found_posts > 9 ) : ?>
                 <div class="gart-load-more-container">
-                    <button class="btn gart-load-more" data-page="2">Încarcă mai multe <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button>
+                    <button class="btn gart-load-more" data-page="2"><?php echo gart_t('Încarcă mai multe'); ?> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button>
                 </div>
             <?php endif; ?>
             

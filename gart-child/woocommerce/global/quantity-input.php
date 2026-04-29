@@ -25,7 +25,7 @@ if ( $max_value && $min_value === $max_value ) {
         }
     </style>
 	<div class="quantity gart-quantity-wrapper">
-        <label class="qty-label" for="<?php echo esc_attr( $input_id ); ?>">CANTITATE</label>
+        <label class="qty-label" for="<?php echo esc_attr( $input_id ); ?>"><?php echo gart_t('CANTITATE'); ?></label>
         <div class="qty-controls">
             <button type="button" class="minus" onclick="var qty=this.nextElementSibling; var val=parseInt(qty.value); if(val>qty.min){qty.value=val-1; qty.dispatchEvent(new Event('change', {bubbles: true}));}">-</button>
             <?php do_action( 'woocommerce_before_quantity_input_field' ); ?>

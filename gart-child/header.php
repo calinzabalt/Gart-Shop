@@ -10,10 +10,10 @@
 <?php wp_body_open(); ?>
 
 <?php 
-    $header_top = get_field('header_top', 'option');
-    $drawer_title = get_field('drawer_title', 'option');
-    $social_icons_title = get_field('social_icons_title', 'option');
-    $social_icons = get_field('social_icons', 'option');
+    $header_top = gart_get_option('header_top');
+    $drawer_title = gart_get_option('drawer_title');
+    $social_icons_title = gart_get_option('social_icons_title');
+    $social_icons = gart_get_option('social_icons');
 ?>
 
 <header class="header">
@@ -38,7 +38,7 @@
             </div>
 
             <div class="nav-logo">
-                <a href="/">
+                <a href="<?php echo esc_url( function_exists('pll_home_url') ? pll_home_url() : home_url( '/' ) ); ?>">
                     <svg version="1.0" width="322.000000pt" height="421.000000pt" viewBox="0 0 322.000000 421.000000" preserveAspectRatio="xMidYMid meet">
                         <g transform="translate(0.000000,421.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
                         <path d="M755 4189 c-110 -7 -155 -19 -270 -74 -65 -32 -111 -63 -168 -115 -90 -83 -196 -237 -222 -320 -9 -30 -21 -64 -25 -75 -54 -128 -63 -341 -20 -495 11 -41 25 -92 30 -112 9 -35 37 -90 82 -165 19 -33 19 -33 0 -60 -62 -89 -119 -254 -132 -388 -15 -150 16 -338 82 -485 59 -133 226 -322 329 -372 174 -86 240 -101 406 -95 137 5 181 11 228 31 17 7 56 23 89 36 72 29 143 81 201 149 45 53 120 169 113 176 -2 2 -22 7 -43 10 l-40 7 -44 -72 c-47 -77 -141 -157 -231 -199 -172 -78 -412 -83 -562 -12 -181 86 -278 186 -373 381 -30 61 -37 84 -64 186 -13 50 -15 304 -2 336 5 13 15 43 22 68 16 57 80 190 92 190 5 0 26 -17 47 -37 57 -56 153 -131 191 -148 19 -9 48 -24 66 -35 59 -35 213 -59 343 -53 184 9 314 61 461 185 26 22 54 38 61 36 9 -4 13 -32 14 -104 1 -54 3 -112 5 -129 l4 -30 -204 -3 -203 -2 6 -31 c3 -18 6 -35 6 -40 0 -5 105 -9 234 -9 178 0 235 3 238 13 3 6 4 224 4 482 l-1 470 -242 3 -243 2 0 -40 0 -40 63 -1 c34 -1 125 -4 202 -8 125 -5 140 -8 139 -23 0 -10 -1 -70 -2 -133 -2 -87 -5 -115 -15 -115 -7 0 -38 22 -70 48 -70 60 -209 138 -261 147 -21 3 -46 10 -55 15 -28 15 -158 26 -175 15 -10 -6 -19 -6 -26 1 -20 20 -245 -27 -318 -67 -94 -52 -100 -57 -218 -162 -24 -21 -47 -36 -51 -34 -20 12 -83 159 -102 236 -66 265 18 577 207 768 75 76 216 173 252 173 9 0 20 3 24 8 15 15 166 27 273 20 177 -10 273 -51 401 -172 24 -23 52 -59 63 -81 37 -74 43 -78 93 -71 26 4 46 9 46 11 0 6 -34 65 -65 114 -14 23 -58 73 -99 113 -60 60 -88 80 -160 111 -47 20 -97 37 -109 37 -13 0 -28 5 -33 10 -15 15 -165 26 -269 19z m256 -1129 c113 -35 227 -100 306 -174 40 -38 73 -74 73 -81 0 -29 -149 -151 -242 -197 -103 -52 -132 -62 -228 -76 -84 -13 -89 -13 -190 4 -151 25 -322 122 -411 235 l-32 41 68 68 c37 38 89 79 114 91 25 13 48 26 51 29 10 12 85 43 144 60 89 26 264 26 347 0z"/>
@@ -59,10 +59,14 @@
                 ?>
             </div>
 
-            <?php if ( class_exists( 'WooCommerce' ) && is_shop() ) : ?>
-                <div class="shop-header-icons flex item-center" style="gap: 20px;">
+            <div class="shop-header-icons flex item-center" style="gap: 20px;">
+                <?php if ( class_exists( 'WooCommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() || is_account_page() ) ) : ?>
                     <?php 
-                    $account_link = get_permalink( get_option('woocommerce_myaccount_page_id') );
+                    $account_id = wc_get_page_id('myaccount');
+                    if ( function_exists('pll_get_post') ) {
+                        $account_id = pll_get_post($account_id) ?: $account_id;
+                    }
+                    $account_link = get_permalink( $account_id );
                     $account_class = 'shop-icon';
                     if ( ! is_user_logged_in() ) {
                         $account_class .= ' login-link';
@@ -73,21 +77,64 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                         </svg>
                     </a>
-                    <a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="shop-icon relative" title="Cart">
+                    <?php 
+                    $cart_id = wc_get_page_id('cart');
+                    $cart_url = get_permalink($cart_id);
+                    ?>
+                    <a href="<?php echo esc_url( $cart_url ); ?>" class="shop-icon relative" title="Cart">
                         <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                         </svg>
-                        <?php if ( WC()->cart ) : ?>
-                            <span class="cart-count"><?php echo WC()->cart->get_cart_contents_count(); ?></span>
+                        <?php if ( WC()->cart ) : 
+                            $cart_count = WC()->cart->get_cart_contents_count();
+                        ?>
+                            <span class="cart-count <?php echo ($cart_count > 0) ? 'is-visible' : ''; ?>"><?php echo $cart_count; ?></span>
                         <?php endif; ?>
                     </a>
-                    <a href="/wishlist" class="shop-icon wishlist-trigger" title="Wishlist">
+                    <?php 
+                    $wishlist_url = home_url( '/wishlist' );
+                    $wishlist_page = get_page_by_path('wishlist');
+                    if ( $wishlist_page ) {
+                        $wishlist_id = function_exists('pll_get_post') ? pll_get_post($wishlist_page->ID) : $wishlist_page->ID;
+                        $wishlist_url = get_permalink($wishlist_id);
+                    }
+                    ?>
+                    <a href="<?php echo esc_url( $wishlist_url ); ?>" class="shop-icon wishlist-trigger relative" title="Wishlist">
                         <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                         </svg>
+                        <span class="wishlist-count <?php echo (gart_get_wishlist_count() > 0) ? 'is-visible' : ''; ?>">
+                            <?php echo gart_get_wishlist_count(); ?>
+                        </span>
                     </a>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+
+                <?php if ( function_exists( 'pll_the_languages' ) ) : 
+                    $languages = pll_the_languages( array( 'raw' => 1 ) );
+                    if ( $languages ) :
+                        $current = null;
+                        foreach($languages as $l) if($l['current_lang']) $current = $l;
+                        if (!$current) $current = reset($languages);
+                ?>
+                        <div class="lang-dropdown">
+                            <div class="lang-current flex item-center">
+                                <img src="<?php echo $current['flag']; ?>" alt="<?php echo $current['name']; ?>">
+                            </div>
+                            <ul class="lang-list">
+                            <?php foreach($languages as $lang): ?>
+                                <?php if(!$lang['current_lang']): ?>
+                                    <li>
+                                        <a href="<?php echo $lang['url']; ?>" class="flex item-center">
+                                            <img src="<?php echo $lang['flag']; ?>" alt="<?php echo $lang['name']; ?>">
+                                            <span><?php echo strtoupper($lang['slug']); ?></span>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; endif; ?>
+            </div>
         </nav>
     </div>
 </header>

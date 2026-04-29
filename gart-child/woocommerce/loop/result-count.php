@@ -14,6 +14,6 @@ $total = wc_get_loop_prop( 'total' );
 
 <p class="woocommerce-result-count" role="alert" aria-relevant="all">
     <?php
-    printf( 'Se afișează %d produse', $total );
+    printf( gart_t('Se afișează %d produse'), $total );
     ?>
 </p>

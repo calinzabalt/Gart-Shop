@@ -24,7 +24,7 @@ do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 						if ( $attribute_name === 'pa_marime' ) : 
 							$sizes_popup = get_field('sizes_popup');
 							if ( $sizes_popup ) : ?>
-								<a href="#" class="sizes-guide-trigger">Ghid Mărimi</a>
+								<a href="#" class="sizes-guide-trigger"><?php echo gart_t('Ghid Mărimi'); ?></a>
 								<div id="sizes-guide-content" style="display:none;"><?php echo $sizes_popup; ?></div>
 							<?php endif;
 						endif; ?>

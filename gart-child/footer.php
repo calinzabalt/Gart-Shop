@@ -1,16 +1,16 @@
 <?php
-    $footer_logo = get_field('footer_logo', 'option');
-    $footer_description = get_field('footer_description', 'option');
-    $footer_menu_1_title = get_field('footer_menu_1_title', 'option');
-    $footer_menu_1 = get_field('footer_menu_1', 'option');
+    $footer_logo = gart_get_option('footer_logo');
+    $footer_description = gart_get_option('footer_description');
+    $footer_menu_1_title = gart_get_option('footer_menu_1_title');
+    $footer_menu_1 = gart_get_option('footer_menu_1');
 
-    $footer_menu_2_title = get_field('footer_menu_2_title', 'option');
-    $footer_menu_2 = get_field('footer_menu_2', 'option');
+    $footer_menu_2_title = gart_get_option('footer_menu_2_title');
+    $footer_menu_2 = gart_get_option('footer_menu_2');
 
-    $footer_menu_3_title = get_field('footer_menu_3_title', 'option');
-    $footer_menu_3 = get_field('footer_menu_3', 'option');
+    $footer_menu_3_title = gart_get_option('footer_menu_3_title');
+    $footer_menu_3 = gart_get_option('footer_menu_3');
 
-    $social_icons = get_field('social_icons', 'option');
+    $social_icons = gart_get_option('social_icons');
 ?>    
     <footer id="site-footer" class="site-footer">
         <div class="container">
@@ -18,7 +18,7 @@
                 <div class="flex">
                     <div class="col-25">
                         <div class="footer_logo">
-                            <a href="/">
+                            <a href="<?php echo esc_url( home_url( '/' ) ); ?>">
                                 <?php echo wp_get_attachment_image($footer_logo, 'medium');?>
                             </a>
                         </div>
@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div class="footer_bottom">
-                <p>© <?php echo date('Y'); ?> Gart. Toate drepturile rezervate.</p> 
+                <p>© <?php echo date('Y'); ?> Gart. <?php echo ( function_exists('pll_current_language') && pll_current_language() === 'en' ) ? 'All rights reserved.' : 'Toate drepturile rezervate.'; ?></p> 
 
                 <div class="social_media">
                     <div class="social_icons">

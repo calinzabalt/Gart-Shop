@@ -70,7 +70,7 @@ function gart_child_product_description() {
 
 add_filter( 'woocommerce_product_related_products_heading', 'gart_child_related_products_heading' );
 function gart_child_related_products_heading() {
-    return 'Produse Similare';
+    return gart_t('Produse Similare');
 }
 
 // 4. Preselect color and hide row
@@ -97,6 +97,9 @@ function gart_child_pa_marime_html( $html, $args ) {
     if ( $args['attribute'] === 'pa_marime' ) {
         $options = $args['options'];
         
+        global $product;
+        $variations = $product->is_type( 'variable' ) ? $product->get_available_variations() : [];
+        
         $custom_html = '<div class="size-boxes flex filter-marime">';
         foreach ( $options as $option ) {
             $val = esc_attr( $option );
@@ -109,7 +112,20 @@ function gart_child_pa_marime_html( $html, $args ) {
             }
             $label = esc_html( strtoupper( $label ) );
             
-            $custom_html .= '<label class="size-box">';
+            // Check if this specific size is in stock
+            $is_in_stock = false;
+            foreach ( $variations as $variation ) {
+                if ( isset( $variation['attributes']['attribute_pa_marime'] ) && $variation['attributes']['attribute_pa_marime'] === $val ) {
+                    if ( $variation['is_in_stock'] ) {
+                        $is_in_stock = true;
+                        break;
+                    }
+                }
+            }
+            
+            $class = 'size-box' . ( ! $is_in_stock ? ' out-of-stock' : '' );
+            
+            $custom_html .= '<label class="' . $class . '">';
             $custom_html .= '<input type="checkbox" name="custom_pa_marime" value="' . $val . '">';
             $custom_html .= '<span class="size-label">' . $label . '</span>';
             $custom_html .= '</label>';
@@ -174,7 +190,7 @@ function gart_child_pa_marime_js() {
 add_filter( 'woocommerce_product_single_add_to_cart_text', 'gart_child_add_to_cart_text' );
 add_filter( 'woocommerce_product_add_to_cart_text', 'gart_child_add_to_cart_text' );
 function gart_child_add_to_cart_text() {
-    return 'ADAUGĂ ÎN COȘ';
+    return gart_t('ADAUGĂ ÎN COȘ');
 }
 
 // 8. Favorite (Wishlist) button logic
@@ -184,12 +200,12 @@ function gart_child_wishlist_btn() {
     if ( $product->is_type( 'variable' ) ) {
         // Hidden by default, toggled by JS when an out-of-stock variation is selected
         echo '<div class="gart-variable-wishlist" style="display:none;">';
-        echo '<a href="#" class="button full_button favorite-btn">ADAUGĂ LA FAVORITE</a>';
+        echo '<a href="#" class="button full_button favorite-btn">' . gart_t('ADAUGĂ LA FAVORITE') . '</a>';
         echo '</div>';
     } elseif ( ! $product->is_in_stock() ) {
         // Always shown if simple product is out of stock
         echo '<div class="gart-simple-wishlist">';
-        echo '<a href="#" class="button full_button favorite-btn">ADAUGĂ LA FAVORITE</a>';
+        echo '<a href="#" class="button full_button favorite-btn">' . gart_t('ADAUGĂ LA FAVORITE') . '</a>';
         echo '</div>';
     }
 }
@@ -204,12 +220,18 @@ function gart_child_wishlist_js() {
                 jQuery('.variations_form').on('show_variation', function(event, variation) {
                     if (variation.is_in_stock) {
                         jQuery('.gart-variable-wishlist').hide();
+                        jQuery('.single_add_to_cart_button').prop('disabled', false);
+                        jQuery('.quantity').show();
                     } else {
                         jQuery('.gart-variable-wishlist').show();
+                        jQuery('.single_add_to_cart_button').prop('disabled', true);
+                        jQuery('.quantity').hide();
                     }
                 });
                 jQuery('.variations_form').on('hide_variation reset_data', function() {
                     jQuery('.gart-variable-wishlist').hide();
+                    jQuery('.single_add_to_cart_button').prop('disabled', false);
+                    jQuery('.quantity').show();
                 });
             }
         });

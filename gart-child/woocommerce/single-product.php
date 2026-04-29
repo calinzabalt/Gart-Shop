@@ -12,7 +12,7 @@ get_header( 'shop' );
             <svg width="10" height="8" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M17 7H1M1 7L7 13M1 7L7 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Înapoi
+            <?php echo gart_t('Înapoi'); ?>
         </a>
         <?php do_action( 'woocommerce_before_main_content' ); ?>
     </div>

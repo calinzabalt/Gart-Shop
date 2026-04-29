@@ -4,7 +4,8 @@ defined( 'ABSPATH' ) || exit;
 get_header( 'shop' );
 
 if ( is_shop() ) {
-    $context = wc_get_page_id('shop');
+    $shop_id = wc_get_page_id('shop');
+    $context = function_exists('pll_get_post') ? pll_get_post($shop_id) : $shop_id;
 } elseif ( is_tax() || is_category() || is_tag() ) {
     $context = get_queried_object();
 } else {
@@ -48,17 +49,17 @@ do_action( 'woocommerce_before_main_content' );
                             <?php the_post_thumbnail('large'); ?>
                         </div>
                         <div class="auction-advert-text">
-                            <span class="advert-label"><?php _e('LICITAȚIE ACTIVĂ', 'gart-auction'); ?></span>
+                            <span class="advert-label"><?php echo gart_t('LICITAȚIE ACTIVĂ'); ?></span>
                             <h2><?php the_title(); ?></h2>
                             <p class="advert-description"><?php echo wp_trim_words( get_the_content(), 35, '...' ); ?></p>
                             
                             <div class="advert-meta flex">
                                 <div class="meta-item">
-                                    <span class="label"><?php _e('Bid curent:', 'gart-auction'); ?></span>
+                                    <span class="label"><?php echo gart_t('Bid curent:'); ?></span>
                                     <span class="value"><?php echo wc_price($current_bid); ?></span>
                                 </div>
                                 <div class="meta-item">
-                                    <span class="label"><?php _e('Se încheie în:', 'gart-auction'); ?></span>
+                                    <span class="label"><?php echo gart_t('Se încheie în:'); ?></span>
                                     <span class="value auction-timer-mini" data-end="<?php echo esc_attr($end_date); ?>">--:--:--</span>
                                 </div>
                             </div>
@@ -71,13 +72,13 @@ do_action( 'woocommerce_before_main_content' );
                                     ?>
                                     <div class="bid-form flex item-center" style="gap:10px; margin-bottom: 10px;">
                                         <input type="number" id="bid-amount" step="any" min="<?php echo esc_attr($min_bid); ?>" value="<?php echo esc_attr($min_bid); ?>" style="width: 100px; padding: 12px; height: 48px; border: 1px solid #ddd;">
-                                        <button type="button" id="place-bid-btn" data-product-id="<?php the_ID(); ?>" class="button alt <?php echo $login_class; ?>" style="margin: 0; flex: 1; height: 48px;"><?php _e('Plasează Bid', 'gart-auction'); ?></button>
+                                        <button type="button" id="place-bid-btn" data-product-id="<?php the_ID(); ?>" class="button alt <?php echo $login_class; ?>" style="margin: 0; flex: 1; height: 48px;"><?php echo gart_t('Plasează Bid'); ?></button>
                                     </div>
                                     <div id="bid-message"></div>
                                 <?php endif; ?>
                             </div>
                             
-                            <a href="<?php the_permalink(); ?>" class="view-details-link"><?php _e('Vezi detalii produs', 'gart-auction'); ?></a>
+                            <a href="<?php the_permalink(); ?>" class="view-details-link"><?php echo gart_t('Vezi detalii produs'); ?></a>
                         </div>
                     </div>
                 </div>

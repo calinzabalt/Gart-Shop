@@ -1,6 +1,7 @@
 <?php
     if ( is_shop() ) {
-        $context = wc_get_page_id('shop');
+        $shop_id = wc_get_page_id('shop');
+        $context = function_exists('pll_get_post') ? pll_get_post($shop_id) : $shop_id;
     } elseif ( is_tax() || is_category() || is_tag() ) {
         $context = get_queried_object();
     } else {

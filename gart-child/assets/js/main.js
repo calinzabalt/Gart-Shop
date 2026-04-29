@@ -11,17 +11,17 @@ jQuery(function ($) {
     $(document).on('click', '.login-link', function (e) {
         e.preventDefault();
         $('#modal-forms').html(`
-            <h3>Autentificare</h3>
+            <h3>${gart_ajax.strings.auth}</h3>
             <form id="loginform">
-                <p><label>Nume utilizator sau adresă email *</label><input type="text" name="username" required></p>
-                <p><label>Parolă *</label><input type="password" name="password" required></p>
-                <p><label><input type="checkbox" name="remember" value="forever"> Ține-mă minte</label></p>
-                <p><button type="submit">Autentificare</button></p>
+                <p><label>${gart_ajax.strings.user_or_email}</label><input type="text" name="username" required></p>
+                <p><label>${gart_ajax.strings.password}</label><input type="password" name="password" required></p>
+                <p><label><input type="checkbox" name="remember" value="forever"> ${gart_ajax.strings.remember_me}</label></p>
+                <p><button type="submit">${gart_ajax.strings.auth}</button></p>
                 <input type="hidden" name="action" value="gart_login">
                 <input type="hidden" name="security" value="${gart_ajax.nonce}">
                 <div class="modal-content-footer">
-                    <a href="#" class="register-link">Creează cont</a>
-                    <a href="#" class="lost-pass-link">Ți-ai pierdut parola?</a>
+                    <a href="#" class="register-link">${gart_ajax.strings.create_account}</a>
+                    <a href="#" class="lost-pass-link">${gart_ajax.strings.forgot_pass_link}</a>
                 </div>
             </form>
         `);
@@ -52,16 +52,16 @@ jQuery(function ($) {
     $(document).on('click', '.register-link', function (e) {
         e.preventDefault();
         $('#modal-forms').html(`
-            <h3>Înregistrare</h3>
+            <h3>${gart_ajax.strings.register}</h3>
             <form id="registerform">
-                <p><label>Nume utilizator *</label><input type="text" name="username" required></p>
-                <p><label>Email *</label><input type="email" name="email" required></p>
-                <p><label>Parolă *</label><input type="password" name="password" required></p>
-                <p><button type="submit">Înregistrare</button></p>
+                <p><label>${gart_ajax.strings.username}</label><input type="text" name="username" required></p>
+                <p><label>${gart_ajax.strings.email}</label><input type="email" name="email" required></p>
+                <p><label>${gart_ajax.strings.password}</label><input type="password" name="password" required></p>
+                <p><button type="submit">${gart_ajax.strings.register}</button></p>
                 <input type="hidden" name="action" value="gart_register">
                 <input type="hidden" name="security" value="${gart_ajax.nonce}">
                 <div class="modal-content-footer">
-                    <a href="#" class="login-link">Ai deja un cont? Autentificare</a>
+                    <a href="#" class="login-link">${gart_ajax.strings.already_account}</a>
                 </div>
             </form>
         `);
@@ -73,14 +73,14 @@ jQuery(function ($) {
     $(document).on('click', '.lost-pass-link', function (e) {
         e.preventDefault();
         $('#modal-forms').html(`
-            <h3>Recuperare Parolă</h3>
+            <h3>${gart_ajax.strings.lost_pass}</h3>
             <form id="lostpasswordform">
-                <p><label>Nume utilizator sau adresă email *</label><input type="text" name="user_login" required></p>
-                <p><button type="submit">Resetare Parolă</button></p>
+                <p><label>${gart_ajax.strings.user_or_email}</label><input type="text" name="user_login" required></p>
+                <p><button type="submit">${gart_ajax.strings.reset_pass}</button></p>
                 <input type="hidden" name="action" value="gart_lost_password">
                 <input type="hidden" name="security" value="${gart_ajax.nonce}">
                 <div class="modal-content-footer">
-                    <a href="#" class="login-link">Înapoi la Autentificare</a>
+                    <a href="#" class="login-link">${gart_ajax.strings.back_to_login}</a>
                 </div>
             </form>
         `);
@@ -98,15 +98,15 @@ jQuery(function ($) {
         $form.prev('.gart-form-message').remove();
         
         // Loading state
-        $btn.prop('disabled', true).text('Vă rugăm așteptați...');
+        $btn.prop('disabled', true).text(gart_ajax.strings.wait);
         
         $.ajax({
             url: gart_ajax.url,
             type: 'POST',
-            data: $form.serialize(),
+            data: $form.serialize() + '&lang=' + gart_ajax.lang,
             dataType: 'json',
             success: function (res) {
-                let msgText = res.data && res.data.message ? res.data.message : 'A apărut o eroare.';
+                let msgText = res.data && res.data.message ? res.data.message : gart_ajax.strings.error;
                 let bgColor = res.success ? '#d1e7dd' : '#f8d7da';
                 let textColor = res.success ? '#0f5132' : '#842029';
                 let borderColor = res.success ? '#badbcc' : '#f5c2c7';
@@ -127,7 +127,7 @@ jQuery(function ($) {
                 $msg.fadeIn(300);
                 
                 if (res.success) {
-                    $btn.text('Succes!');
+                    $btn.text(gart_ajax.strings.success);
                     setTimeout(function() {
                         location.reload();
                     }, 2000);
@@ -136,7 +136,7 @@ jQuery(function ($) {
                 }
             },
             error: function () {
-                let $msg = $('<div class="gart-form-message"></div>').text('O eroare a apărut la procesarea solicitării.').css({
+                let $msg = $('<div class="gart-form-message"></div>').text(gart_ajax.strings.request_error).css({
                     'background-color': '#f8d7da',
                     'color': '#842029',
                     'border': '1px solid #f5c2c7',
@@ -215,7 +215,7 @@ jQuery(function ($) {
             let hasNext = $pag.find('a.next').length > 0;
             $pag.hide();
             if (hasNext) {
-                $pag.after('<div class="gart-load-more-container"><button class="btn gart-load-more" data-page="2">Încarcă mai multe <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button></div>');
+                $pag.after('<div class="gart-load-more-container"><button class="btn gart-load-more" data-page="2">' + gart_ajax.strings.load_more + ' <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button></div>');
             }
         }
     }
@@ -235,7 +235,7 @@ jQuery(function ($) {
             $rightProducts.css('position', 'relative').append('<div class="gart-ajax-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);z-index:999;"><div style="width:40px;height:40px;border:4px solid #eaeaea;border-top:4px solid #000;border-radius:50%;animation:gart-spin 1s linear infinite;margin:100px auto;"></div></div>');
             if (!$('#gart-spin-css').length) $('head').append('<style id="gart-spin-css">@keyframes gart-spin{to{transform:rotate(360deg)}}</style>');
         } else if (isLoadMore) {
-            $loadMoreBtn.text('Se încarcă...').prop('disabled', true);
+            $loadMoreBtn.text(gart_ajax.strings.loading).prop('disabled', true);
         }
 
         $.ajax({
@@ -249,7 +249,8 @@ jQuery(function ($) {
                 pa_culoare: checkedColors,
                 orderby: orderby,
                 paged: page,
-                is_load_more: isLoadMore ? 'true' : 'false'
+                is_load_more: isLoadMore ? 'true' : 'false',
+                lang: gart_ajax.lang
             },
             success: function(response) {
                 if (!response.success) return;
@@ -263,7 +264,7 @@ jQuery(function ($) {
                     }
                     
                     if (hasNext) {
-                        $loadMoreBtn.attr('data-page', page + 1).text('Încarcă mai multe').prop('disabled', false);
+                        $loadMoreBtn.attr('data-page', page + 1).text(gart_ajax.strings.load_more).prop('disabled', false);
                     } else {
                         $('.gart-load-more-container').remove();
                     }
@@ -271,12 +272,12 @@ jQuery(function ($) {
                     if (html.trim() !== '') {
                         $('.right_products').html('<div class="site-main"><div class="woocommerce-content">' + html + '</div></div>');
                     } else {
-                        $('.right_products').html('<div class="woocommerce-info">Niciun produs găsit.</div>');
+                        $('.right_products').html('<div class="woocommerce-info">' + gart_ajax.strings.no_products + '</div>');
                     }
                     
                     $('.gart-load-more-container, .woocommerce-pagination').remove();
                     if (hasNext) {
-                        $('.right_products .woocommerce-content').append('<div class="gart-load-more-container"><button class="btn gart-load-more" data-page="2">Încarcă mai multe <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button></div>');
+                        $('.right_products .woocommerce-content').append('<div class="gart-load-more-container"><button class="btn gart-load-more" data-page="2">' + gart_ajax.strings.load_more + ' <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button></div>');
                     }
                     
                     let offset = $('.shop-container').offset();
@@ -306,14 +307,15 @@ jQuery(function ($) {
         if (!page) return;
 
         if ($btn.closest('.blog_posts').length) {
-            $btn.text('Se încarcă...').prop('disabled', true);
+            $btn.text(gart_ajax.strings.loading).prop('disabled', true);
             $.ajax({
                 url: gart_ajax.url,
                 type: 'POST',
                 data: {
                     action: 'gart_load_more_posts',
                     paged: page,
-                    security: gart_ajax.nonce
+                    security: gart_ajax.nonce,
+                    lang: gart_ajax.lang
                 },
                 success: function(response) {
                     if (response.success) {
@@ -321,7 +323,7 @@ jQuery(function ($) {
                             $('.blog_posts .posts_grid').append(response.data.html);
                         }
                         if (response.data.has_next) {
-                            $btn.attr('data-page', page + 1).html('Încarcă mai multe <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg>').prop('disabled', false);
+                            $btn.attr('data-page', page + 1).html(gart_ajax.strings.load_more + ' <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 transition-transform"><path d="m6 9 6 6 6-6"></path></svg>').prop('disabled', false);
                         } else {
                             $btn.closest('.gart-load-more-container').remove();
                         }
@@ -355,4 +357,16 @@ jQuery(function ($) {
         e.preventDefault();
     });
 
+    if (gart_ajax.lang === 'en') {
+        const fixT = (r) => {
+            if (!r || !r.nodeType) return;
+            const w = document.createTreeWalker(r, 4, null, false);
+            let n; while (n = w.nextNode()) {
+                if (n.textContent.includes('Total coș') || n.textContent.includes('Total coş')) 
+                    n.textContent = n.textContent.replace(/Total coș|Total coş/gi, 'Cart Totals');
+            }
+        };
+        fixT(document.body);
+        new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => fixT(n)))).observe(document.body, {childList:true, subtree:true});
+    }
 });
